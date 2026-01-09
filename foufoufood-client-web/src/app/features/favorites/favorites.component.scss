@@ -1,0 +1,309 @@
+.favorites-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+
+  .header-section {
+    margin-bottom: 2rem;
+
+    .header-content {
+      margin-bottom: 1.5rem;
+
+      h1 {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+
+        .header-icon {
+          font-size: 2.5rem;
+          animation: heartbeat 2s ease-in-out infinite;
+        }
+
+        @keyframes heartbeat {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin: 0;
+        font-weight: 500;
+      }
+    }
+
+    .search-bar {
+      max-width: 600px;
+
+      .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        font-size: 1rem;
+        transition: all 0.3s;
+
+        &:focus {
+          outline: none;
+          border-color: #e74c3c;
+          box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+        }
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+    }
+  }
+
+  .loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid #f0f0f0;
+      border-top-color: #e74c3c;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      opacity: 0.5;
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: #333;
+      margin: 0 0 1rem 0;
+    }
+
+    p {
+      color: #666;
+      font-size: 1.1rem;
+      margin: 0.5rem 0;
+      line-height: 1.6;
+    }
+
+    .empty-hint {
+      color: #999;
+      font-size: 0.95rem;
+      font-style: italic;
+    }
+
+    .browse-btn,
+    .clear-search-btn {
+      margin-top: 2rem;
+      padding: 0.75rem 2rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.3s;
+
+      &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      }
+    }
+
+    .clear-search-btn {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+
+      &:hover {
+        box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+      }
+    }
+  }
+
+  .restaurants-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+
+    @media (max-width: 768px) {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
+
+  .restaurant-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    border: 2px solid transparent;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(231, 76, 60, 0.15);
+      border-color: rgba(231, 76, 60, 0.2);
+    }
+
+    .card-header {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      z-index: 10;
+
+      .favorite-btn {
+        background: rgba(255, 255, 255, 0.95);
+        border: 2px solid rgba(231, 76, 60, 0.3);
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+          background: rgba(255, 182, 193, 0.95);
+          transform: scale(1.15);
+          border-color: #e74c3c;
+        }
+
+        .heart-icon {
+          font-size: 1.5rem;
+          animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #ff6b9d 0%, #e74c3c 100%);
+          border-color: #e74c3c;
+          box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+
+          .heart-icon {
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.2));
+          }
+        }
+      }
+    }
+
+    .card-content {
+      padding: 1.5rem;
+      flex: 1;
+
+      .restaurant-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 0.5rem 0;
+      }
+
+      .restaurant-address {
+        color: #666;
+        margin: 0.25rem 0;
+        font-size: 0.95rem;
+      }
+
+      .restaurant-cuisine {
+        color: #667eea;
+        font-weight: 600;
+        margin: 0.5rem 0;
+        font-size: 0.9rem;
+      }
+
+      .restaurant-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f0f0f0;
+
+        .stars {
+          font-size: 1.1rem;
+        }
+
+        .rating-value {
+          font-weight: 700;
+          color: #667eea;
+          font-size: 1rem;
+        }
+
+        .review-count {
+          color: #999;
+          font-size: 0.875rem;
+        }
+      }
+    }
+
+    .card-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #f0f0f0;
+      background: linear-gradient(135deg, #f9f9f9 0%, #f0f0f0 100%);
+
+      .view-details-btn {
+        width: 100%;
+        padding: 0.75rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+      }
+    }
+  }
+}
+

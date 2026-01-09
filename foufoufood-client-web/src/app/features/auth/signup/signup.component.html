@@ -1,0 +1,189 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <h1>Inscription</h1>
+    
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="signup-form">
+      <div class="form-group">
+        <label for="name">Nom complet</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="form-control"
+          [class.error]="name?.invalid && submitted"
+          placeholder="Jean Dupont"
+        />
+        <div class="error-message" *ngIf="name?.invalid && submitted">
+          <span *ngIf="name?.errors?.['required']">Le nom est requis</span>
+          <span *ngIf="name?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          formControlName="email"
+          class="form-control"
+          [class.error]="email?.invalid && submitted"
+          placeholder="votre@email.com"
+          autocomplete="email"
+        />
+        <div class="error-message" *ngIf="email?.invalid && submitted">
+          <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+          <span *ngIf="email?.errors?.['email']">L'email n'est pas valide</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Mot de passe</label>
+        <input
+          type="password"
+          id="password"
+          formControlName="password"
+          class="form-control"
+          [class.error]="password?.invalid && submitted"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+        <div class="error-message" *ngIf="password?.invalid && submitted">
+          <span *ngIf="password?.errors?.['required']">Le mot de passe est requis</span>
+          <span *ngIf="password?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirmPassword">Confirmer le mot de passe</label>
+        <input
+          type="password"
+          id="confirmPassword"
+          formControlName="confirmPassword"
+          class="form-control"
+          [class.error]="confirmPassword?.invalid && (confirmPassword?.touched || submitted)"
+          placeholder="••••••••"
+          autocomplete="new-password"
+        />
+        <div class="error-message" *ngIf="confirmPassword?.invalid && (confirmPassword?.touched || submitted)">
+          <span *ngIf="confirmPassword?.errors?.['required']">La confirmation est requise</span>
+          <span *ngIf="confirmPassword?.errors?.['passwordMismatch']">Les mots de passe ne correspondent pas</span>
+        </div>
+      </div>
+
+      <div class="form-group" *ngIf="!isRoleLocked">
+        <label for="role">Type de compte</label>
+        <select
+          id="role"
+          formControlName="role"
+          class="form-control"
+        >
+          <option value="client">Client</option>
+          <option value="delivery_partner">Partenaire de livraison</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="phone">Téléphone (optionnel)</label>
+        <input
+          type="tel"
+          id="phone"
+          formControlName="phone"
+          class="form-control"
+          placeholder="+1 234 567 8900"
+        />
+      </div>
+
+      <div formGroupName="address" class="address-group">
+        <h3>Adresse (optionnel)</h3>
+        
+        <div class="form-group">
+          <label for="line1">Ligne 1</label>
+          <input
+            type="text"
+            id="line1"
+            formControlName="line1"
+            class="form-control"
+            placeholder="123 Rue Principale"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="line2">Ligne 2</label>
+          <input
+            type="text"
+            id="line2"
+            formControlName="line2"
+            class="form-control"
+            placeholder="Appartement 4B"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">Ville</label>
+            <input
+              type="text"
+              id="city"
+              formControlName="city"
+              class="form-control"
+              placeholder="Montréal"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="region">Région/Province</label>
+            <input
+              type="text"
+              id="region"
+              formControlName="region"
+              class="form-control"
+              placeholder="Québec"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="postalCode">Code postal</label>
+            <input
+              type="text"
+              id="postalCode"
+              formControlName="postalCode"
+              class="form-control"
+              placeholder="H1A 1A1"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="country">Pays</label>
+            <input
+              type="text"
+              id="country"
+              formControlName="country"
+              class="form-control"
+              placeholder="Canada"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">S'inscrire</span>
+        <span *ngIf="isLoading">Inscription...</span>
+      </button>
+    </form>
+
+    <div class="auth-links">
+      <p>Déjà un compte ? <a routerLink="/auth/login">Se connecter</a></p>
+    </div>
+  </div>
+</div>
+

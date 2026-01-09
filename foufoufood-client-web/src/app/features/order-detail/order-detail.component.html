@@ -1,0 +1,136 @@
+<div class="order-detail-container">
+  <div class="order-header">
+    <button class="back-btn" (click)="goBack()">← Retour aux commandes</button>
+    <h1>Détails de la commande</h1>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state">
+    <p>Chargement des détails de la commande...</p>
+  </div>
+
+  <div *ngIf="error() && !isLoading()" class="error-state">
+    <div class="error-card">
+      <h2>Erreur</h2>
+      <p>{{ error() }}</p>
+      <button class="home-btn" (click)="goBack()">Retour aux commandes</button>
+    </div>
+  </div>
+
+  <div *ngIf="order() && !isLoading()" class="order-detail-content">
+    <!-- En-tête de la commande -->
+    <div class="order-info-card">
+      <div class="order-header-info">
+        <div>
+          <span class="order-number">Commande #{{ getOrderId() }}</span>
+          <span class="order-date">Créée le {{ formatDate(order()!.createdAt) }}</span>
+        </div>
+        <span
+          class="status-badge"
+          [class]="'status-' + getStatusClass(order()!.status)"
+        >
+          {{ order()!.status }}
+        </span>
+      </div>
+
+      <div class="order-actions" *ngIf="canCancel()">
+        <button
+          class="cancel-btn"
+          (click)="cancelOrder()"
+          [disabled]="isCancelling()"
+        >
+          <span *ngIf="!isCancelling()">Annuler la commande</span>
+          <span *ngIf="isCancelling()">Annulation...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline du statut -->
+    <div class="status-timeline-card">
+      <h2>Suivi de la commande</h2>
+      <div class="timeline">
+        <div
+          *ngFor="let step of getStatusTimeline()"
+          class="timeline-step"
+          [class.active]="step.active"
+          [class.completed]="step.completed"
+        >
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <span class="timeline-label">{{ step.label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informations du restaurant -->
+    <div class="info-card">
+      <h2>Restaurant</h2>
+      <div class="info-content">
+        <div class="info-row">
+          <span class="label">Nom:</span>
+          <span class="value">{{ getRestaurantName() }}</span>
+        </div>
+        <div class="info-row" *ngIf="getRestaurantAddress()">
+          <span class="label">Adresse:</span>
+          <span class="value">{{ getRestaurantAddress() }}</span>
+        </div>
+        <div class="info-row" *ngIf="getRestaurantPhone()">
+          <span class="label">Téléphone:</span>
+          <span class="value">{{ getRestaurantPhone() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Adresse de livraison -->
+    <div class="info-card">
+      <h2>Adresse de livraison</h2>
+      <div class="info-content">
+        <p class="address-text">{{ getDeliveryAddress() }}</p>
+      </div>
+    </div>
+
+    <!-- Informations du livreur -->
+    <div class="info-card" *ngIf="order()!.deliveryPartner">
+      <h2>Livreur</h2>
+      <div class="info-content">
+        <div class="info-row">
+          <span class="label">Nom:</span>
+          <span class="value">{{ getDeliveryPartnerName() }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Articles commandés -->
+    <div class="items-card">
+      <h2>Articles commandés</h2>
+      <div class="items-list">
+        <div *ngFor="let item of order()!.items" class="order-item">
+          <div class="item-info">
+            <div class="item-header">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-quantity">x{{ item.quantity }}</span>
+            </div>
+            <div class="item-details">
+              <span class="unit-price">{{ item.unitPrice | number:'1.2-2' }} $ / unité</span>
+              <span class="item-notes" *ngIf="item.notes">{{ item.notes }}</span>
+            </div>
+          </div>
+          <span class="item-total">{{ item.total | number:'1.2-2' }} $</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Résumé financier -->
+    <div class="summary-card">
+      <div class="summary-row">
+        <span class="label">Sous-total:</span>
+        <span class="value">{{ order()!.totalPrice | number:'1.2-2' }} $</span>
+      </div>
+      <div class="summary-row total">
+        <span class="label">Total:</span>
+        <span class="value">{{ order()!.totalPrice | number:'1.2-2' }} $</span>
+      </div>
+    </div>
+  </div>
+</div>
+

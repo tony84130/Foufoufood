@@ -1,0 +1,274 @@
+.confirmation-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+
+  .loading-state,
+  .error-state {
+    text-align: center;
+    padding: 4rem 2rem;
+
+    .error-card {
+      background: white;
+      border-radius: 16px;
+      padding: 3rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      h2 {
+        color: #e74c3c;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: #666;
+        margin-bottom: 2rem;
+      }
+
+      .home-btn {
+        padding: 0.75rem 2rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+      }
+    }
+  }
+
+  .confirmation-content {
+    .success-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+      .success-icon {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        color: white;
+        font-weight: 700;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #333;
+        margin: 0 0 1rem 0;
+      }
+
+      .success-message {
+        font-size: 1.1rem;
+        color: #666;
+        margin: 0;
+      }
+    }
+
+    .order-details {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+
+      .detail-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        &.total-card {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+
+          .total-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .label,
+            .value {
+              color: white;
+            }
+
+            .total {
+              font-size: 2rem;
+              font-weight: 700;
+            }
+          }
+        }
+
+        h2 {
+          font-size: 1.5rem;
+          font-weight: 700;
+          color: #333;
+          margin: 0 0 1.5rem 0;
+          padding-bottom: 1rem;
+          border-bottom: 2px solid #f0f0f0;
+        }
+
+        .detail-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 0.75rem 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          .label {
+            font-weight: 600;
+            color: #666;
+          }
+
+          .value {
+            font-weight: 700;
+            color: #333;
+
+            &.status {
+              padding: 0.25rem 0.75rem;
+              border-radius: 6px;
+              font-size: 0.9rem;
+              font-weight: 600;
+
+              &.status-en-attente {
+                background: #fff3cd;
+                color: #856404;
+              }
+
+              &.status-confirmée {
+                background: #d1ecf1;
+                color: #0c5460;
+              }
+
+              &.status-préparée {
+                background: #d4edda;
+                color: #155724;
+              }
+
+              &.status-en-livraison {
+                background: #cce5ff;
+                color: #004085;
+              }
+
+              &.status-livrée {
+                background: #d1f2eb;
+                color: #0e6655;
+              }
+
+              &.status-annulée {
+                background: #f8d7da;
+                color: #721c24;
+              }
+            }
+          }
+        }
+
+        .address-text {
+          color: #666;
+          line-height: 1.6;
+          margin: 0;
+        }
+
+        .items-list {
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+
+          .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f0f0f0;
+
+            &:last-child {
+              border-bottom: none;
+            }
+
+            .item-info {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 0.25rem;
+
+              .item-name {
+                font-weight: 600;
+                color: #333;
+              }
+
+              .item-quantity {
+                color: #999;
+                font-size: 0.85rem;
+              }
+            }
+
+            .item-price {
+              font-weight: 700;
+              color: #333;
+            }
+          }
+        }
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+
+      @media (max-width: 600px) {
+        flex-direction: column;
+      }
+
+      button {
+        flex: 1;
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+
+        &.orders-btn {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          }
+        }
+
+        &.home-btn {
+          background: white;
+          color: #667eea;
+          border: 2px solid #667eea;
+
+          &:hover {
+            background: #667eea;
+            color: white;
+          }
+        }
+      }
+    }
+  }
+}
+

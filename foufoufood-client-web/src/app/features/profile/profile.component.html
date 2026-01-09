@@ -1,0 +1,305 @@
+<div class="profile-container">
+  <div *ngIf="isLoading && !user()" class="loading-state">
+    <div class="loading-spinner"></div>
+    <p>Chargement de votre profil...</p>
+  </div>
+
+  <div *ngIf="user()" class="profile-wrapper">
+    <!-- Header avec avatar -->
+    <div class="profile-header-card">
+      <div class="profile-avatar-section">
+        <div class="profile-avatar-large">
+          <span>{{ user()?.name?.charAt(0)?.toUpperCase() || 'U' }}</span>
+        </div>
+        <div class="profile-header-info">
+          <h1>{{ user()?.name }}</h1>
+          <div class="role-badge" [attr.data-role]="user()?.role">
+            <span class="role-icon">👤</span>
+            <span>{{ roleDisplay }}</span>
+          </div>
+        </div>
+      </div>
+      <button
+        *ngIf="!isEditing"
+        (click)="toggleEdit()"
+        class="btn-edit"
+      >
+        <span class="btn-icon">✏️</span>
+        <span>Modifier</span>
+      </button>
+      <button
+        *ngIf="isEditing"
+        (click)="toggleEdit()"
+        class="btn-cancel"
+      >
+        <span class="btn-icon">✕</span>
+        <span>Annuler</span>
+      </button>
+    </div>
+
+    <!-- Messages d'alerte -->
+    <div class="alert alert-error" *ngIf="errorMessage">
+      <span class="alert-icon">⚠️</span>
+      <span>{{ errorMessage }}</span>
+    </div>
+
+    <div class="alert alert-success" *ngIf="successMessage">
+      <span class="alert-icon">✓</span>
+      <span>{{ successMessage }}</span>
+    </div>
+
+    <!-- Formulaire d'édition -->
+    <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="isEditing" class="profile-form">
+      <div class="form-section">
+        <h2 class="section-title">
+          <span class="section-icon">👤</span>
+          Informations personnelles
+        </h2>
+        
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name" class="form-label">
+              <span class="label-icon">📝</span>
+              Nom complet
+            </label>
+            <input
+              type="text"
+              id="name"
+              formControlName="name"
+              class="form-input"
+              [class.error]="name?.invalid && name?.touched"
+              placeholder="Votre nom complet"
+            />
+            <div class="form-error" *ngIf="name?.invalid && name?.touched">
+              <span *ngIf="name?.errors?.['required']">Le nom est requis</span>
+              <span *ngIf="name?.errors?.['minlength']">Le nom doit contenir au moins 2 caractères</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">
+              <span class="label-icon">📧</span>
+              Email
+            </label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-input"
+              [class.error]="email?.invalid && email?.touched"
+              placeholder="votre@email.com"
+            />
+            <div class="form-error" *ngIf="email?.invalid && email?.touched">
+              <span *ngIf="email?.errors?.['required']">L'email est requis</span>
+              <span *ngIf="email?.errors?.['email']">L'email n'est pas valide</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="phone" class="form-label">
+              <span class="label-icon">📱</span>
+              Téléphone
+            </label>
+            <input
+              type="tel"
+              id="phone"
+              formControlName="phone"
+              class="form-input"
+              placeholder="123-456-7890"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h2 class="section-title">
+          <span class="section-icon">📍</span>
+          Adresse de livraison
+        </h2>
+        
+        <div formGroupName="address" class="address-form">
+          <div class="form-group">
+            <label for="line1" class="form-label">
+              <span class="label-icon">🏠</span>
+              Adresse (ligne 1)
+            </label>
+            <input
+              type="text"
+              id="line1"
+              formControlName="line1"
+              class="form-input"
+              placeholder="123 Rue Principale"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="line2" class="form-label">
+              <span class="label-icon">🏢</span>
+              Adresse (ligne 2)
+            </label>
+            <input
+              type="text"
+              id="line2"
+              formControlName="line2"
+              class="form-input"
+              placeholder="Appartement, suite, etc. (optionnel)"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city" class="form-label">
+                <span class="label-icon">🏙️</span>
+                Ville
+              </label>
+              <input
+                type="text"
+                id="city"
+                formControlName="city"
+                class="form-input"
+                placeholder="Montréal"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="region" class="form-label">
+                <span class="label-icon">🗺️</span>
+                Province/État
+              </label>
+              <input
+                type="text"
+                id="region"
+                formControlName="region"
+                class="form-input"
+                placeholder="Québec"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="postalCode" class="form-label">
+                <span class="label-icon">📮</span>
+                Code postal
+              </label>
+              <input
+                type="text"
+                id="postalCode"
+                formControlName="postalCode"
+                class="form-input"
+                placeholder="H1A 1A1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="country" class="form-label">
+                <span class="label-icon">🌍</span>
+                Pays
+              </label>
+              <input
+                type="text"
+                id="country"
+                formControlName="country"
+                class="form-input"
+                placeholder="Canada"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="profileForm.invalid || isLoading"
+        >
+          <span *ngIf="!isLoading">💾 Enregistrer les modifications</span>
+          <span *ngIf="isLoading">⏳ Enregistrement en cours...</span>
+        </button>
+      </div>
+    </form>
+
+    <!-- Mode affichage -->
+    <div *ngIf="!isEditing" class="profile-view">
+      <div class="info-section-combined">
+        <div class="info-section-inner">
+          <h2 class="section-title">
+            <span class="section-icon">👤</span>
+            Informations personnelles
+          </h2>
+          
+          <div class="info-grid">
+            <div class="info-card">
+              <div class="info-icon">📝</div>
+              <div class="info-content">
+                <label>Nom</label>
+                <span>{{ user()?.name }}</span>
+              </div>
+            </div>
+
+            <div class="info-card">
+              <div class="info-icon">📧</div>
+              <div class="info-content">
+                <label>Email</label>
+                <span>{{ user()?.email }}</span>
+              </div>
+            </div>
+
+            <div class="info-card" *ngIf="user()?.phone">
+              <div class="info-icon">📱</div>
+              <div class="info-content">
+                <label>Téléphone</label>
+                <span>{{ user()?.phone }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section-inner" *ngIf="user()?.address">
+          <div class="section-divider"></div>
+          <h2 class="section-title">
+            <span class="section-icon">📍</span>
+            Adresse de livraison
+          </h2>
+          
+          <div class="address-card">
+            <div class="address-icon">🏠</div>
+            <div class="address-content">
+              <div *ngIf="user()?.address?.line1" class="address-line">
+                {{ user()?.address?.line1 }}
+              </div>
+              <div *ngIf="user()?.address?.line2" class="address-line">
+                {{ user()?.address?.line2 }}
+              </div>
+              <div class="address-line" *ngIf="user()?.address?.city || user()?.address?.region || user()?.address?.postalCode">
+                <span *ngIf="user()?.address?.city">{{ user()?.address?.city }}</span>
+                <span *ngIf="user()?.address?.city && user()?.address?.region">, </span>
+                <span *ngIf="user()?.address?.region">{{ user()?.address?.region }}</span>
+                <span *ngIf="user()?.address?.postalCode"> {{ user()?.address?.postalCode }}</span>
+              </div>
+              <div class="address-line" *ngIf="user()?.address?.country">
+                {{ user()?.address?.country }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Zone de danger -->
+    <div class="danger-section" *ngIf="!isEditing">
+      <p class="danger-description">
+        La suppression de votre compte est irréversible. Toutes vos données seront définitivement supprimées.
+      </p>
+      <button
+        (click)="deleteAccount()"
+        class="btn btn-danger"
+        [disabled]="isLoading"
+      >
+        <span class="btn-icon">🗑️</span>
+        <span>Supprimer mon compte</span>
+      </button>
+    </div>
+  </div>
+</div>

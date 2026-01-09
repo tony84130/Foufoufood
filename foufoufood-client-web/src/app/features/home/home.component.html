@@ -1,0 +1,64 @@
+<div class="home-container">
+  <!-- Message de bienvenue pour utilisateurs connectés -->
+  <ng-container *ngIf="authService.isAuthenticated(); else notAuthenticated">
+    <div class="welcome-card">
+      <div class="welcome-header">
+        <span class="welcome-icon">👋</span>
+        <div>
+          <h1>Bienvenue, {{ authService.user()?.name }} !</h1>
+          <span class="role-badge">{{ getRoleDisplay(authService.userRole()) }}</span>
+        </div>
+      </div>
+      <p class="welcome-description">
+        {{ getWelcomeMessage(authService.userRole()) }}
+      </p>
+      <div class="action-buttons">
+        <ng-container *ngIf="authService.userRole() === 'client'">
+          <button class="btn btn-primary" (click)="navigateToRestaurants()">
+            🍔 Découvrir les restaurants
+          </button>
+        </ng-container>
+        <ng-container *ngIf="authService.userRole() === 'delivery_partner'">
+          <button class="btn btn-primary" (click)="router.navigate(['/delivery-orders'])">
+            🚚 Voir les commandes
+          </button>
+        </ng-container>
+        <ng-container *ngIf="authService.userRole() === 'restaurant_admin'">
+          <button class="btn btn-primary" (click)="router.navigate(['/restaurant-admin'])">
+            🏬 Gérer mes restaurants
+          </button>
+        </ng-container>
+        <ng-container *ngIf="authService.userRole() === 'platform_admin'">
+          <button class="btn btn-primary" (click)="router.navigate(['/admin'])">
+            ⚙️ Administration
+          </button>
+        </ng-container>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Message pour utilisateurs non connectés -->
+  <ng-template #notAuthenticated>
+    <div class="welcome-card">
+      <h1>Bienvenue sur FoufouFood</h1>
+      <p class="subtitle">Votre plateforme de livraison de repas préférée</p>
+      
+      <div class="action-buttons">
+        <button class="btn btn-primary" (click)="navigateToSignup('client')">
+          Commander
+        </button>
+        <button class="btn btn-secondary" (click)="navigateToSignup('delivery_partner')">
+          Livrer
+        </button>
+      </div>
+
+      <div class="login-section">
+        <p class="login-text">Déjà inscrit ?</p>
+        <button class="btn btn-outline" (click)="navigateToLogin()">
+          Se connecter
+        </button>
+      </div>
+    </div>
+  </ng-template>
+</div>
+

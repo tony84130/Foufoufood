@@ -1,0 +1,169 @@
+<div class="layout-container">
+  <header class="header" *ngIf="showHeader">
+    <div class="header-content">
+      <div class="header-left">
+        <div class="logo-section">
+          <div class="logo">
+            <span class="logo-icon">🍔</span>
+            <span class="logo-text">FoufouFood</span>
+          </div>
+        </div>
+        
+        <nav class="nav">
+        <a 
+          *ngIf="!isAuthenticated || (userRole !== 'platform_admin' && userRole !== 'restaurant_admin' && userRole !== 'delivery_partner')" 
+          routerLink="/restaurants" 
+          routerLinkActive="active"
+          class="nav-link"
+          tabindex="0"
+        >
+          <span class="nav-icon">🏪</span>
+          <span class="nav-text">Restaurants</span>
+        </a>
+        
+        <ng-container *ngIf="isAuthenticated">
+          <a 
+            *ngIf="userRole === 'client'" 
+            routerLink="/cart" 
+            routerLinkActive="active" 
+            class="nav-link cart-link"
+            tabindex="0"
+          >
+            <span class="nav-icon">🛒</span>
+            <span class="nav-text">Panier</span>
+            <span class="cart-badge" *ngIf="cartItemCount > 0">{{ cartItemCount }}</span>
+          </a>
+          
+          <a 
+            *ngIf="userRole === 'client'" 
+            routerLink="/favorites" 
+            routerLinkActive="active"
+            class="nav-link"
+            tabindex="0"
+          >
+            <span class="nav-icon">❤️</span>
+            <span class="nav-text">Favoris</span>
+          </a>
+          
+          <a 
+            *ngIf="userRole === 'client'" 
+            routerLink="/orders" 
+            routerLinkActive="active"
+            class="nav-link"
+            tabindex="0"
+          >
+            <span class="nav-icon">📦</span>
+            <span class="nav-text">Mes commandes</span>
+          </a>
+          
+          <a 
+            *ngIf="userRole === 'delivery_partner'" 
+            routerLink="/delivery-orders" 
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            <span class="nav-icon">🚚</span>
+            <span class="nav-text">Commandes</span>
+          </a>
+          
+          <a 
+            *ngIf="userRole === 'platform_admin'" 
+            routerLink="/admin" 
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Admin</span>
+          </a>
+          
+          <a 
+            *ngIf="userRole === 'restaurant_admin'" 
+            routerLink="/restaurant-admin" 
+            routerLinkActive="active"
+            class="nav-link"
+          >
+            <span class="nav-icon">🏬</span>
+            <span class="nav-text">Mes Restaurants</span>
+          </a>
+        </ng-container>
+        </nav>
+      </div>
+      
+      <div class="header-right">
+        <div class="actions-section">
+          <app-notifications *ngIf="isAuthenticated && userRole === 'client'"></app-notifications>
+        </div>
+        
+        <div class="user-section">
+        <ng-container *ngIf="isAuthenticated; else notAuthenticated">
+          <div class="profile-menu-container">
+            <button 
+              (click)="toggleProfileMenu()" 
+              (keydown.enter)="toggleProfileMenu()"
+              (keydown.space)="toggleProfileMenu(); $event.preventDefault()"
+              class="profile-btn"
+              [class.active]="showProfileMenu"
+              tabindex="0"
+              aria-label="Menu profil"
+              aria-expanded="{{ showProfileMenu }}"
+            >
+              <div class="profile-avatar">
+                <span>{{ currentUser?.name?.charAt(0)?.toUpperCase() || 'U' }}</span>
+              </div>
+              <span class="profile-name">{{ currentUser?.name }}</span>
+              <span class="profile-arrow">▼</span>
+            </button>
+            
+            <div 
+              class="profile-dropdown" 
+              *ngIf="showProfileMenu" 
+              (click)="$event.stopPropagation()"
+            >
+              <div class="dropdown-header">
+                <div class="dropdown-avatar">
+                  <span>{{ currentUser?.name?.charAt(0)?.toUpperCase() || 'U' }}</span>
+                </div>
+                <div class="dropdown-user-info">
+                  <span class="dropdown-name">{{ currentUser?.name }}</span>
+                  <span class="dropdown-role">{{ getRoleDisplay(userRole) }}</span>
+                </div>
+              </div>
+              
+              <div class="dropdown-divider"></div>
+              
+              <a 
+                routerLink="/profile" 
+                (click)="closeProfileMenu()" 
+                class="dropdown-item"
+              >
+                <span class="dropdown-icon">👤</span>
+                <span>Mon profil</span>
+              </a>
+              
+              <button 
+                (click)="logout(); closeProfileMenu()" 
+                class="dropdown-item logout-btn"
+              >
+                <span class="dropdown-icon">🚪</span>
+                <span>Déconnexion</span>
+              </button>
+            </div>
+          </div>
+        </ng-container>
+        
+        <ng-template #notAuthenticated>
+          <div class="auth-buttons">
+            <a routerLink="/auth/login" class="btn btn-ghost">Connexion</a>
+            <a routerLink="/auth/signup" class="btn btn-primary">Inscription</a>
+          </div>
+        </ng-template>
+        </div>
+      </div>
+    </div>
+  </header>
+  
+  <main class="main-content" [class.no-header]="!showHeader">
+    <router-outlet></router-outlet>
+  </main>
+</div>
+

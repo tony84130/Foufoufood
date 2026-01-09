@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:name=".FoufouFoodApplication"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FouFouFood4"
+        android:usesCleartextTraffic="true"
+        tools:targetApi="31">
+        <activity
+            android:name=".ui.activity.admin.AdminDashboardActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.profile.ProfileActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.activity.restaurant.RestaurantListActivity" />
+        <activity
+            android:name=".ui.activity.restaurant.RestaurantDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.activity.restaurant.RestaurantListActivity" />
+        <activity
+            android:name=".ui.activity.auth.SignInActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.restaurant.RestaurantListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.auth.SignUpActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.auth.WelcomeActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.auth.ClientSignUpActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.activity.auth.WelcomeActivity" />
+        <activity
+            android:name=".ui.activity.auth.DeliveryPartnerSignUpActivity"
+            android:exported="false"
+            android:parentActivityName=".ui.activity.auth.WelcomeActivity" />
+        <activity
+            android:name=".ui.activity.cart.CartActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.order.CheckoutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.order.OrderSuccessActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.order.OrderListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.order.OrderDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.delivery.DeliveryDashboardActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FouFouFood4" />
+        <activity
+            android:name=".ui.activity.favorites.FavoritesActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FouFouFood4" />
+        <activity
+            android:name=".ui.activity.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>

@@ -1,0 +1,120 @@
+<div class="orders-list-container">
+  <div class="orders-header">
+    <h1>Mes Commandes</h1>
+    <p class="subtitle">Gérez et suivez toutes vos commandes</p>
+  </div>
+
+  <div class="filters-section">
+    <div class="status-filters">
+      <button
+        *ngFor="let option of statusOptions"
+        [class.active]="selectedStatus() === option.value"
+        (click)="onStatusChange(option.value)"
+        (keydown.enter)="onStatusChange(option.value)"
+        (keydown.space)="onStatusChange(option.value); $event.preventDefault()"
+        class="filter-btn"
+        tabindex="0"
+        [attr.aria-pressed]="selectedStatus() === option.value"
+      >
+        {{ option.label }}
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="isLoading()" class="loading-state">
+    <p>Chargement de vos commandes...</p>
+  </div>
+
+  <div *ngIf="error() && !isLoading()" class="error-state">
+    <p>{{ error() }}</p>
+  </div>
+
+  <div *ngIf="!isLoading() && !error() && orders().length === 0" class="empty-state">
+    <div class="empty-icon">📦</div>
+    <h2>Aucune commande</h2>
+    <p>Aucune commande ne correspond à vos critères de recherche.</p>
+    <button class="browse-btn" routerLink="/restaurants">
+      Parcourir les restaurants
+    </button>
+  </div>
+
+  <div *ngIf="!isLoading() && orders().length > 0" class="orders-grid">
+    <div
+      *ngFor="let order of orders()"
+      class="order-card"
+      (click)="viewOrderDetails(order)"
+      (keydown.enter)="viewOrderDetails(order)"
+      (keydown.space)="viewOrderDetails(order); $event.preventDefault()"
+      tabindex="0"
+      role="button"
+      [attr.aria-label]="'Voir les détails de la commande ' + getOrderId(order).substring(0, 8)"
+    >
+      <div class="order-header">
+        <div class="order-info">
+          <span class="order-number">Commande #{{ getOrderId(order).substring(0, 8) }}</span>
+          <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+        </div>
+        <span
+          class="status-badge"
+          [class]="'status-' + getStatusClass(order.status)"
+        >
+          {{ getStatusLabel(order.status) }}
+        </span>
+      </div>
+
+      <div class="order-content">
+        <div class="restaurant-info">
+          <h3>{{ getRestaurantName(order) }}</h3>
+        </div>
+
+        <div class="order-items-preview">
+          <div
+            *ngFor="let item of order.items.slice(0, 3)"
+            class="item-preview"
+          >
+            <span class="item-name">{{ item.name }}</span>
+            <span class="item-quantity">x{{ item.quantity }}</span>
+          </div>
+          <p *ngIf="order.items.length > 3" class="more-items">
+            +{{ order.items.length - 3 }} autre(s) article(s)
+          </p>
+        </div>
+
+        <div class="order-footer">
+          <div class="order-total">
+            <span class="label">Total:</span>
+            <span class="value">{{ order.totalPrice | number:'1.2-2' }} $</span>
+          </div>
+          <button class="view-details-btn">Voir les détails →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!isLoading() && orders().length > 0 && totalPages() > 1" class="pagination">
+    <button
+      class="page-btn"
+      [disabled]="currentPage() === 1"
+      (click)="onPageChange(currentPage() - 1)"
+      (keydown.enter)="onPageChange(currentPage() - 1)"
+      tabindex="0"
+      aria-label="Page précédente"
+    >
+      ← Précédent
+    </button>
+    <span class="page-info">
+      Page {{ currentPage() }} sur {{ totalPages() }} ({{ totalOrders() }} commande(s))
+    </span>
+    <button
+      class="page-btn"
+      [disabled]="currentPage() === totalPages()"
+      (click)="onPageChange(currentPage() + 1)"
+      (keydown.enter)="onPageChange(currentPage() + 1)"
+      tabindex="0"
+      aria-label="Page suivante"
+    >
+      Suivant →
+    </button>
+  </div>
+</div>
+

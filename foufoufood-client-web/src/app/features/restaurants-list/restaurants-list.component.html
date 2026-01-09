@@ -1,0 +1,68 @@
+<div class="restaurants-list-container">
+  <div class="header-section">
+    <h1>🍔 Restaurants</h1>
+    <div class="search-bar">
+      <input
+        type="text"
+        placeholder="Rechercher un restaurant... (Ctrl+K ou Cmd+K)"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value); onSearch()"
+        class="search-input"
+        tabindex="0"
+        aria-label="Rechercher un restaurant"
+      />
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading()">
+    <p>Chargement des restaurants...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading() && filteredRestaurants().length === 0">
+    <p *ngIf="searchQuery()">Aucun restaurant trouvé pour "{{ searchQuery() }}"</p>
+    <p *ngIf="!searchQuery()">Aucun restaurant disponible</p>
+  </div>
+
+  <div class="restaurants-grid" *ngIf="!isLoading() && filteredRestaurants().length > 0">
+    <div
+      *ngFor="let restaurant of filteredRestaurants()"
+      class="restaurant-card"
+      [routerLink]="['/restaurants', restaurant.id]"
+    >
+      <div class="card-header">
+        <button
+          class="favorite-btn"
+          (click)="toggleFavorite(restaurant.id); $event.stopPropagation()"
+          [class.active]="isFavorite(restaurant.id)"
+          title="{{ isFavorite(restaurant.id) ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"
+        >
+          <span class="heart-icon">{{ isFavorite(restaurant.id) ? '❤️' : '🤍' }}</span>
+        </button>
+      </div>
+      
+      <div class="card-content">
+        <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+        <p class="restaurant-address">{{ restaurant.address }}</p>
+        <p class="restaurant-cuisine" *ngIf="restaurant.cuisine">{{ restaurant.cuisine }}</p>
+        
+        <div class="restaurant-rating">
+          <span class="stars">{{ getStars(restaurant.rating) }}</span>
+          <span class="rating-value">{{ restaurant.rating }}/5</span>
+          <span class="review-count" *ngIf="restaurant.reviews">
+            ({{ restaurant.reviews.length }} avis)
+          </span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button 
+          class="view-details-btn" 
+          (click)="viewRestaurantDetails(restaurant.id, $event)"
+        >
+          Voir les détails →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,88 @@
+<div class="confirmation-container">
+  <div *ngIf="isLoading()" class="loading-state">
+    <p>Chargement de votre commande...</p>
+  </div>
+
+  <div *ngIf="error() && !isLoading()" class="error-state">
+    <div class="error-card">
+      <h2>Erreur</h2>
+      <p>{{ error() }}</p>
+      <button class="home-btn" (click)="goToHome()">Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <div *ngIf="order() && !isLoading()" class="confirmation-content">
+    <div class="success-header">
+      <div class="success-icon">✓</div>
+      <h1>Commande confirmée !</h1>
+      <p class="success-message">
+        Votre commande a été créée avec succès. Vous recevrez un email de confirmation sous peu.
+      </p>
+    </div>
+
+    <div class="order-details">
+      <div class="detail-card">
+        <h2>Détails de la commande</h2>
+        
+        <div class="detail-row">
+          <span class="label">Numéro de commande:</span>
+          <span class="value">{{ getOrderId() }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Restaurant:</span>
+          <span class="value">{{ getRestaurantName() }}</span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Statut:</span>
+          <span class="value status" [class]="'status-' + order()!.status.toLowerCase().replace(' ', '-')">
+            {{ order()!.status }}
+          </span>
+        </div>
+
+        <div class="detail-row">
+          <span class="label">Date:</span>
+          <span class="value">
+            {{ order()!.createdAt | date:'medium':'fr' }}
+          </span>
+        </div>
+      </div>
+
+      <div class="detail-card">
+        <h2>Adresse de livraison</h2>
+        <p class="address-text">{{ getDeliveryAddress() }}</p>
+      </div>
+
+      <div class="detail-card">
+        <h2>Articles commandés</h2>
+        <div class="items-list">
+          <div *ngFor="let item of order()!.items" class="order-item">
+            <div class="item-info">
+              <span class="item-name">{{ item.name }}</span>
+              <span class="item-quantity">x{{ item.quantity }}</span>
+            </div>
+            <span class="item-price">{{ item.total | number:'1.2-2' }} $</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="detail-card total-card">
+        <div class="total-row">
+          <span class="label">Total:</span>
+          <span class="value total">{{ order()!.totalPrice | number:'1.2-2' }} $</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button class="orders-btn" (click)="goToOrders()">
+        Voir mes commandes
+      </button>
+      <button class="home-btn" (click)="goToHome()">
+        Retour à l'accueil
+      </button>
+    </div>
+  </div>
+</div>
+

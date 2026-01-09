@@ -1,0 +1,306 @@
+<div class="delivery-orders-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1>
+        <span class="header-icon">🚚</span>
+        Commandes à livrer
+      </h1>
+      <p class="subtitle">Gérez vos livraisons et suivez vos commandes</p>
+    </div>
+    <button 
+      class="refresh-btn"
+      (click)="refreshCurrentTab()"
+      [disabled]="isLoading()"
+      title="Rafraîchir"
+    >
+      <span class="refresh-icon">🔄</span>
+      <span>Actualiser</span>
+    </button>
+  </div>
+
+  <!-- Onglets -->
+  <div class="tabs">
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'available'"
+      (click)="switchTab('available')"
+    >
+      <span class="tab-icon">📋</span>
+      <span>Disponibles</span>
+      <span class="tab-badge" *ngIf="availableOrders().length > 0">
+        {{ availableOrders().length }}
+      </span>
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'assigned'"
+      (click)="switchTab('assigned')"
+    >
+      <span class="tab-icon">📦</span>
+      <span>Mes commandes</span>
+      <span class="tab-badge" *ngIf="assignedOrders().length > 0">
+        {{ assignedOrders().length }}
+      </span>
+    </button>
+    <button
+      class="tab-btn"
+      [class.active]="activeTab() === 'history'"
+      (click)="switchTab('history')"
+    >
+      <span class="tab-icon">✅</span>
+      <span>Historique</span>
+    </button>
+  </div>
+
+  <!-- Message d'erreur -->
+  <div class="alert alert-error" *ngIf="error()">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- État de chargement -->
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="loading-spinner"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- Onglet: Commandes disponibles -->
+  <div *ngIf="activeTab() === 'available' && !isLoading()" class="tab-content">
+    <div class="empty-state" *ngIf="availableOrders().length === 0">
+      <div class="empty-icon">📭</div>
+      <h2>Aucune commande disponible</h2>
+      <p>Toutes les commandes préparées ont été assignées.</p>
+    </div>
+
+    <div class="orders-grid" *ngIf="availableOrders().length > 0">
+      <div *ngFor="let order of availableOrders()" class="order-card available">
+        <div class="order-header">
+          <div class="order-info">
+            <span class="order-number">Commande #{{ getOrderId(order).substring(0, 8) }}</span>
+            <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+          </div>
+          <span
+            class="status-badge"
+            [class]="'status-' + getStatusClass(order.status)"
+          >
+            {{ order.status }}
+          </span>
+        </div>
+
+        <div class="order-content">
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">🏪</span>
+              Restaurant
+            </h3>
+            <p class="restaurant-name">{{ getRestaurantName(order) }}</p>
+            <p class="restaurant-address">{{ getRestaurantAddress(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">👤</span>
+              Client
+            </h3>
+            <p class="customer-name">{{ getCustomerName(order) }}</p>
+            <p class="customer-phone" *ngIf="getCustomerPhone(order)">
+              📞 {{ getCustomerPhone(order) }}
+            </p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">📍</span>
+              Adresse de livraison
+            </h3>
+            <p class="delivery-address">{{ getDeliveryAddress(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">🛒</span>
+              Articles
+            </h3>
+            <div class="items-list">
+              <div *ngFor="let item of order.items" class="item-row">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-quantity">x{{ item.quantity }}</span>
+              </div>
+            </div>
+            <p class="items-count">Total: {{ getItemsCount(order) }} article(s)</p>
+          </div>
+
+          <div class="order-total">
+            <span class="label">Montant total:</span>
+            <span class="value">{{ order.totalPrice | number:'1.2-2' }} $</span>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <button
+            class="btn btn-primary"
+            (click)="assignOrder(getOrderId(order))"
+            [disabled]="isAssigning() === getOrderId(order)"
+          >
+            <span *ngIf="isAssigning() !== getOrderId(order)">✅ Prendre la commande</span>
+            <span *ngIf="isAssigning() === getOrderId(order)">⏳ Attribution...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglet: Mes commandes assignées -->
+  <div *ngIf="activeTab() === 'assigned' && !isLoading()" class="tab-content">
+    <div class="empty-state" *ngIf="assignedOrders().length === 0">
+      <div class="empty-icon">📦</div>
+      <h2>Aucune commande assignée</h2>
+      <p>Vous n'avez actuellement aucune commande en cours.</p>
+    </div>
+
+    <div class="orders-grid" *ngIf="assignedOrders().length > 0">
+      <div *ngFor="let order of assignedOrders()" class="order-card assigned">
+        <div class="order-header">
+          <div class="order-info">
+            <span class="order-number">Commande #{{ getOrderId(order).substring(0, 8) }}</span>
+            <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+          </div>
+          <span
+            class="status-badge"
+            [class]="'status-' + getStatusClass(order.status)"
+          >
+            {{ order.status }}
+          </span>
+        </div>
+
+        <div class="order-content">
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">🏪</span>
+              Restaurant
+            </h3>
+            <p class="restaurant-name">{{ getRestaurantName(order) }}</p>
+            <p class="restaurant-address">{{ getRestaurantAddress(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">👤</span>
+              Client
+            </h3>
+            <p class="customer-name">{{ getCustomerName(order) }}</p>
+            <p class="customer-phone" *ngIf="getCustomerPhone(order)">
+              📞 {{ getCustomerPhone(order) }}
+            </p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">📍</span>
+              Adresse de livraison
+            </h3>
+            <p class="delivery-address">{{ getDeliveryAddress(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">🛒</span>
+              Articles
+            </h3>
+            <div class="items-list">
+              <div *ngFor="let item of order.items" class="item-row">
+                <span class="item-name">{{ item.name }}</span>
+                <span class="item-quantity">x{{ item.quantity }}</span>
+              </div>
+            </div>
+            <p class="items-count">Total: {{ getItemsCount(order) }} article(s)</p>
+          </div>
+
+          <div class="order-total">
+            <span class="label">Montant total:</span>
+            <span class="value">{{ order.totalPrice | number:'1.2-2' }} $</span>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          <div *ngIf="isWaitingForPreparation(order)" class="waiting-message">
+            <span class="waiting-icon">⏳</span>
+            <span>En attente de préparation par le restaurant</span>
+          </div>
+          
+          <button
+            *ngIf="canUpdateToInDelivery(order)"
+            class="btn btn-primary"
+            (click)="updateOrderStatus(getOrderId(order), 'En livraison')"
+            [disabled]="isUpdatingStatus() === getOrderId(order)"
+          >
+            <span *ngIf="isUpdatingStatus() !== getOrderId(order)">🚚 Démarrer la livraison</span>
+            <span *ngIf="isUpdatingStatus() === getOrderId(order)">⏳ Mise à jour...</span>
+          </button>
+          
+          <button
+            *ngIf="canUpdateToDelivered(order)"
+            class="btn btn-success"
+            (click)="updateOrderStatus(getOrderId(order), 'Livrée')"
+            [disabled]="isUpdatingStatus() === getOrderId(order)"
+          >
+            <span *ngIf="isUpdatingStatus() !== getOrderId(order)">✅ Marquer comme livrée</span>
+            <span *ngIf="isUpdatingStatus() === getOrderId(order)">⏳ Mise à jour...</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Onglet: Historique -->
+  <div *ngIf="activeTab() === 'history' && !isLoading()" class="tab-content">
+    <div class="empty-state" *ngIf="historyOrders().length === 0">
+      <div class="empty-icon">📜</div>
+      <h2>Aucun historique</h2>
+      <p>Vous n'avez pas encore livré de commandes.</p>
+    </div>
+
+    <div class="orders-grid" *ngIf="historyOrders().length > 0">
+      <div *ngFor="let order of historyOrders()" class="order-card history">
+        <div class="order-header">
+          <div class="order-info">
+            <span class="order-number">Commande #{{ getOrderId(order).substring(0, 8) }}</span>
+            <span class="order-date">{{ formatDate(order.createdAt) }}</span>
+          </div>
+          <span class="status-badge status-livrée">Livrée</span>
+        </div>
+
+        <div class="order-content">
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">🏪</span>
+              Restaurant
+            </h3>
+            <p class="restaurant-name">{{ getRestaurantName(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">👤</span>
+              Client
+            </h3>
+            <p class="customer-name">{{ getCustomerName(order) }}</p>
+          </div>
+
+          <div class="info-section">
+            <h3>
+              <span class="section-icon">📍</span>
+              Adresse de livraison
+            </h3>
+            <p class="delivery-address">{{ getDeliveryAddress(order) }}</p>
+          </div>
+
+          <div class="order-total">
+            <span class="label">Montant total:</span>
+            <span class="value">{{ order.totalPrice | number:'1.2-2' }} $</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

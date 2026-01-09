@@ -1,0 +1,507 @@
+<div class="admin-restaurant-container">
+  <div class="header">
+    <h1>Gestion de mes Restaurants</h1>
+    <button
+      *ngIf="!showRestaurantForm"
+      (click)="openCreateForm()"
+      class="btn btn-primary"
+    >
+      Ajouter un Restaurant
+    </button>
+  </div>
+
+  <div class="error-message" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <div class="success-message" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <div class="create-restaurant-form" *ngIf="showRestaurantForm">
+    <h2>{{ selectedRestaurant() ? 'Modifier le Restaurant' : 'Créer un Restaurant' }}</h2>
+    <form [formGroup]="restaurantForm" (ngSubmit)="selectedRestaurant() ? onUpdateRestaurant() : onCreateRestaurant()">
+      <div class="form-group">
+        <label for="name">Nom du restaurant *</label>
+        <input
+          type="text"
+          id="name"
+          formControlName="name"
+          class="form-control"
+          [class.error]="restaurantForm.get('name')?.invalid && restaurantForm.get('name')?.touched"
+        />
+        <div class="error-message" *ngIf="restaurantForm.get('name')?.invalid && restaurantForm.get('name')?.touched">
+          Le nom est requis
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Adresse *</label>
+        <input
+          type="text"
+          id="address"
+          formControlName="address"
+          class="form-control"
+          [class.error]="restaurantForm.get('address')?.invalid && restaurantForm.get('address')?.touched"
+        />
+        <div class="error-message" *ngIf="restaurantForm.get('address')?.invalid && restaurantForm.get('address')?.touched">
+          L'adresse est requise
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="cuisine">Type de cuisine</label>
+          <input
+            type="text"
+            id="cuisine"
+            formControlName="cuisine"
+            class="form-control"
+            placeholder="Italienne, Asiatique, etc."
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Téléphone</label>
+          <input
+            type="tel"
+            id="phone"
+            formControlName="phone"
+            class="form-control"
+          />
+        </div>
+      </div>
+
+      <div class="form-group opening-hours-group">
+        <label class="section-label">🕐 Horaires d'ouverture</label>
+        <p class="section-description">Définissez les heures d'ouverture pour chaque jour de la semaine</p>
+        <div formArrayName="openingHours" class="opening-hours-grid">
+          <div *ngFor="let day of daysOfWeek; let i = index" class="day-hours-card">
+            <div class="day-header">
+              <label class="day-name">{{ day.label }}</label>
+              <label class="day-toggle">
+                <input 
+                  type="checkbox" 
+                  [checked]="hasHoursForDay(day.value)"
+                  (change)="toggleDayHours(day.value, $event)"
+                />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="day-hours-content" *ngIf="hasHoursForDay(day.value)">
+              <div class="time-inputs-compact">
+                <input 
+                  type="time" 
+                  [value]="getHoursForDay(day.value)?.open || '09:00'"
+                  (change)="updateDayHours(day.value, 'open', $event)"
+                  class="form-control time-input-compact"
+                />
+                <span class="time-separator-compact">→</span>
+                <input 
+                  type="time" 
+                  [value]="getHoursForDay(day.value)?.close || '21:00'"
+                  (change)="updateDayHours(day.value, 'close', $event)"
+                  class="form-control time-input-compact"
+                />
+              </div>
+            </div>
+            <div class="day-closed" *ngIf="!hasHoursForDay(day.value)">
+              <span class="closed-label">Fermé</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="button"
+          (click)="toggleRestaurantForm()"
+          class="btn btn-secondary"
+        >
+          Annuler
+        </button>
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="restaurantForm.invalid || isLoading"
+        >
+          <span *ngIf="!isLoading">{{ selectedRestaurant() ? 'Mettre à jour' : 'Créer' }}</span>
+          <span *ngIf="isLoading">Enregistrement...</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <div class="restaurants-section" *ngIf="restaurants().length > 0 && !showRestaurantForm">
+    <div class="restaurants-sidebar">
+      <h2>Mes Restaurants</h2>
+      <div class="restaurant-list">
+        <button
+          *ngFor="let restaurant of restaurants()"
+          (click)="selectRestaurant(restaurant)"
+          class="restaurant-item"
+          [class.active]="selectedRestaurant()?.id === restaurant.id"
+        >
+          <h3>{{ restaurant.name }}</h3>
+          <p>{{ restaurant.address }}</p>
+        </button>
+      </div>
+    </div>
+
+    <div class="restaurant-details" *ngIf="selectedRestaurant()">
+      <div class="restaurant-header">
+        <div>
+          <h2>{{ selectedRestaurant()?.name }}</h2>
+          <p>{{ selectedRestaurant()?.address }}</p>
+          <p *ngIf="selectedRestaurant()?.cuisine">Cuisine: {{ selectedRestaurant()?.cuisine }}</p>
+          <p *ngIf="selectedRestaurant()?.phone">Téléphone: {{ selectedRestaurant()?.phone }}</p>
+          <p>Note: {{ selectedRestaurant()?.rating }}/5</p>
+        </div>
+        <button
+          (click)="toggleRestaurantForm()"
+          class="btn btn-secondary"
+        >
+          Modifier
+        </button>
+      </div>
+
+      <div class="opening-hours-display" *ngIf="selectedRestaurant()?.openingHours && selectedRestaurant()!.openingHours!.length > 0">
+        <h3>🕐 Horaires d'ouverture</h3>
+        <div class="hours-list">
+          <div *ngFor="let hours of getSortedOpeningHours()" class="hours-item">
+            <span class="day-name-display">{{ getDayLabel(hours.day) }}</span>
+            <span class="hours-time">{{ hours.open }} - {{ hours.close }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="opening-hours-display closed" *ngIf="!selectedRestaurant()?.openingHours || selectedRestaurant()!.openingHours!.length === 0">
+        <h3>🕐 Horaires d'ouverture</h3>
+        <p class="no-hours">Aucun horaire défini</p>
+      </div>
+
+      <div class="tabs-section">
+        <div class="tabs-header">
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'menu'"
+            (click)="setActiveTab('menu')"
+          >
+            Menu
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'reviews'"
+            (click)="setActiveTab('reviews')"
+          >
+            Avis des clients
+            <span class="badge" *ngIf="selectedRestaurant()?.reviews && selectedRestaurant()!.reviews!.length > 0">
+              {{ selectedRestaurant()!.reviews!.length }}
+            </span>
+          </button>
+          <button
+            class="tab-button"
+            [class.active]="activeTab === 'orders'"
+            (click)="setActiveTab('orders')"
+          >
+            Commandes
+            <span class="badge" *ngIf="orders().length > 0">
+              {{ orders().length }}
+            </span>
+          </button>
+        </div>
+
+        <div class="tab-content" *ngIf="activeTab === 'menu'">
+          <div class="menu-section">
+            <div class="menu-header">
+              <h3>Menu</h3>
+              <button
+                (click)="toggleMenuForm()"
+                class="btn btn-primary"
+              >
+                Ajouter un Item
+              </button>
+            </div>
+
+        <div class="menu-form" *ngIf="showMenuForm">
+          <h4>{{ editingMenuItem ? 'Modifier l\'Item' : 'Nouvel Item' }}</h4>
+          <form [formGroup]="menuForm" (ngSubmit)="onSaveMenuItem()">
+            <div class="form-group">
+              <label for="menu-name">Nom *</label>
+              <input
+                type="text"
+                id="menu-name"
+                formControlName="name"
+                class="form-control"
+                [class.error]="menuForm.get('name')?.invalid && menuForm.get('name')?.touched"
+              />
+              <div class="error-message" *ngIf="menuForm.get('name')?.invalid && menuForm.get('name')?.touched">
+                Le nom est requis
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="menu-description">Description</label>
+              <textarea
+                id="menu-description"
+                formControlName="description"
+                class="form-control"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="menu-price">Prix *</label>
+                <input
+                  type="number"
+                  id="menu-price"
+                  formControlName="price"
+                  class="form-control"
+                  step="0.01"
+                  min="0"
+                  [class.error]="menuForm.get('price')?.invalid && menuForm.get('price')?.touched"
+                />
+                <div class="error-message" *ngIf="menuForm.get('price')?.invalid && menuForm.get('price')?.touched">
+                  <span *ngIf="menuForm.get('price')?.errors?.['required']">Le prix est requis</span>
+                  <span *ngIf="menuForm.get('price')?.errors?.['min']">Le prix doit être positif</span>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="menu-category">Catégorie *</label>
+                <select
+                  id="menu-category"
+                  formControlName="category"
+                  class="form-control"
+                >
+                  <option *ngFor="let category of menuCategories" [value]="category">
+                    {{ category }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="menu-image">URL de l'image</label>
+              <input
+                type="url"
+                id="menu-image"
+                formControlName="image"
+                class="form-control"
+                placeholder="https://example.com/image.jpg"
+              />
+            </div>
+
+            <div class="form-actions">
+              <button
+                type="button"
+                (click)="toggleMenuForm()"
+                class="btn btn-secondary"
+              >
+                Annuler
+              </button>
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="menuForm.invalid || isLoading"
+              >
+                <span *ngIf="!isLoading">{{ editingMenuItem ? 'Mettre à jour' : 'Ajouter' }}</span>
+                <span *ngIf="isLoading">Enregistrement...</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="menu-items" *ngIf="menuItems().length > 0">
+          <div class="menu-item-card" *ngFor="let item of menuItems()">
+            <div class="menu-item-content">
+              <h4>{{ item.name }}</h4>
+              <p *ngIf="item.description" class="description">{{ item.description }}</p>
+              <div class="menu-item-meta">
+                <span class="category">{{ item.category }}</span>
+                <span class="price">{{ item.price | number:'1.2-2' }} $</span>
+              </div>
+            </div>
+            <div class="menu-item-actions">
+              <button
+                (click)="toggleMenuForm(item)"
+                class="btn btn-secondary btn-sm"
+              >
+                Modifier
+              </button>
+              <button
+                (click)="onDeleteMenuItem(item)"
+                class="btn btn-danger btn-sm"
+              >
+                Supprimer
+              </button>
+            </div>
+          </div>
+        </div>
+
+            <div class="empty-state" *ngIf="menuItems().length === 0 && !showMenuForm">
+              Aucun item dans le menu pour le moment
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" *ngIf="activeTab === 'reviews'">
+          <div class="reviews-section">
+            <div class="reviews-header">
+              <div class="rating-summary" *ngIf="selectedRestaurant()?.rating">
+                <span class="rating-label">Note moyenne :</span>
+                <span class="rating-value">{{ selectedRestaurant()?.rating }}/5</span>
+                <span class="rating-count" *ngIf="selectedRestaurant()?.reviews">
+                  ({{ selectedRestaurant()?.reviews?.length || 0 }} avis)
+                </span>
+              </div>
+            </div>
+
+            <div class="reviews-list" *ngIf="selectedRestaurant()?.reviews && selectedRestaurant()!.reviews!.length > 0">
+              <div class="review-card" *ngFor="let review of selectedRestaurant()!.reviews">
+                <div class="review-header">
+                  <div class="review-user">
+                    <strong>{{ getReviewUserName(review) }}</strong>
+                    <span class="review-date" *ngIf="review.createdAt">{{ formatDate(review.createdAt) }}</span>
+                  </div>
+                  <div class="review-rating">
+                    <span class="stars">{{ getStars(review.rating) }}</span>
+                    <span class="rating-number">{{ review.rating }}/5</span>
+                  </div>
+                </div>
+                <p class="review-comment" *ngIf="review.comment">{{ review.comment }}</p>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="!selectedRestaurant()?.reviews || selectedRestaurant()!.reviews!.length === 0">
+              Aucun avis pour le moment
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-content" *ngIf="activeTab === 'orders'">
+          <div class="orders-section">
+            <div class="orders-header">
+              <h3>Commandes du restaurant</h3>
+              <div class="status-filters">
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'all'"
+                  (click)="onOrderStatusFilterChange('all')"
+                >
+                  Toutes
+                </button>
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'En attente'"
+                  (click)="onOrderStatusFilterChange('En attente')"
+                >
+                  En attente
+                </button>
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'Confirmée'"
+                  (click)="onOrderStatusFilterChange('Confirmée')"
+                >
+                  Confirmée
+                </button>
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'Préparée'"
+                  (click)="onOrderStatusFilterChange('Préparée')"
+                >
+                  Préparée
+                </button>
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'En livraison'"
+                  (click)="onOrderStatusFilterChange('En livraison')"
+                >
+                  En livraison
+                </button>
+                <button
+                  class="filter-btn"
+                  [class.active]="selectedOrderStatus === 'Livrée'"
+                  (click)="onOrderStatusFilterChange('Livrée')"
+                >
+                  Livrée
+                </button>
+              </div>
+            </div>
+
+            <div *ngIf="isLoadingOrders()" class="loading-state">
+              <p>Chargement des commandes...</p>
+            </div>
+
+            <div class="orders-list" *ngIf="!isLoadingOrders() && orders().length > 0">
+              <div class="order-card" *ngFor="let order of orders()">
+                <div class="order-card-header">
+                  <div class="order-info">
+                    <span class="order-number">Commande #{{ getOrderId(order).substring(0, 8) }}</span>
+                    <span class="order-date">{{ formatOrderDate(order.createdAt) }}</span>
+                  </div>
+                  <span
+                    class="status-badge"
+                    [class]="'status-' + getStatusClass(order.status)"
+                  >
+                    {{ order.status }}
+                  </span>
+                </div>
+
+                <div class="order-card-content">
+                  <div class="order-detail-row">
+                    <span class="label">Client:</span>
+                    <span class="value">{{ getCustomerName(order) }}</span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="label">Adresse de livraison:</span>
+                    <span class="value">{{ getDeliveryAddress(order) }}</span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="label">Articles:</span>
+                    <span class="value">{{ order.items.length }} article(s)</span>
+                  </div>
+                  <div class="order-detail-row">
+                    <span class="label">Total:</span>
+                    <span class="value total-price">{{ order.totalPrice | number:'1.2-2' }} $</span>
+                  </div>
+                </div>
+
+                <div class="order-card-actions">
+                  <button
+                    *ngIf="canUpdateToPrepared(order)"
+                    class="btn btn-primary btn-sm"
+                    (click)="updateOrderStatus(getOrderId(order), 'Préparée')"
+                    [disabled]="isUpdatingOrderStatus() === getOrderId(order)"
+                  >
+                    <span *ngIf="isUpdatingOrderStatus() !== getOrderId(order)">✅ Marquer comme Préparée</span>
+                    <span *ngIf="isUpdatingOrderStatus() === getOrderId(order)">⏳ Mise à jour...</span>
+                  </button>
+                  
+                  <button
+                    *ngIf="canCancelOrder(order)"
+                    class="btn btn-danger btn-sm"
+                    (click)="cancelOrder(getOrderId(order))"
+                    [disabled]="isUpdatingOrderStatus() === getOrderId(order)"
+                  >
+                    <span *ngIf="isUpdatingOrderStatus() !== getOrderId(order)">❌ Annuler la commande</span>
+                    <span *ngIf="isUpdatingOrderStatus() === getOrderId(order)">⏳ Annulation...</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="empty-state" *ngIf="!isLoadingOrders() && orders().length === 0">
+              <p>Aucune commande pour ce restaurant</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading && restaurants().length === 0 && !showRestaurantForm">
+    <p>Vous n'avez pas encore de restaurant. Créez-en un pour commencer !</p>
+  </div>
+</div>
+

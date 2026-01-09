@@ -1,0 +1,89 @@
+<div class="favorites-container">
+  <div class="header-section">
+    <div class="header-content">
+      <h1>
+        <span class="header-icon">❤️</span>
+        Mes Favoris
+      </h1>
+      <p class="subtitle" *ngIf="getFavoritesCount() > 0">
+        {{ getFavoritesCount() }} restaurant{{ getFavoritesCount() > 1 ? 's' : '' }} favori{{ getFavoritesCount() > 1 ? 's' : '' }}
+      </p>
+    </div>
+    
+    <div class="search-bar" *ngIf="getFavoritesCount() > 0">
+      <input
+        type="text"
+        placeholder="Rechercher dans vos favoris..."
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value); onSearch()"
+        class="search-input"
+      />
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="isLoading()">
+    <div class="loading-spinner"></div>
+    <p>Chargement de vos favoris...</p>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading() && getFavoritesCount() === 0">
+    <div class="empty-icon">🤍</div>
+    <h2>Aucun favori</h2>
+    <p>Vous n'avez pas encore ajouté de restaurant à vos favoris.</p>
+    <p class="empty-hint">Explorez les restaurants et ajoutez vos préférés en cliquant sur le cœur ❤️</p>
+    <a routerLink="/restaurants" class="browse-btn">
+      Parcourir les restaurants
+    </a>
+  </div>
+
+  <div class="empty-state" *ngIf="!isLoading() && getFavoritesCount() > 0 && filteredRestaurants().length === 0 && searchQuery()">
+    <div class="empty-icon">🔍</div>
+    <h2>Aucun résultat</h2>
+    <p>Aucun restaurant favori ne correspond à "{{ searchQuery() }}"</p>
+    <button class="clear-search-btn" (click)="searchQuery.set(''); onSearch()">
+      Effacer la recherche
+    </button>
+  </div>
+
+  <div class="restaurants-grid" *ngIf="!isLoading() && filteredRestaurants().length > 0">
+    <div
+      *ngFor="let restaurant of filteredRestaurants()"
+      class="restaurant-card"
+      [routerLink]="['/restaurants', restaurant.id]"
+    >
+      <div class="card-header">
+        <button
+          class="favorite-btn active"
+          (click)="toggleFavorite(restaurant.id); $event.stopPropagation()"
+          title="Retirer des favoris"
+        >
+          <span class="heart-icon">❤️</span>
+        </button>
+      </div>
+      
+      <div class="card-content">
+        <h3 class="restaurant-name">{{ restaurant.name }}</h3>
+        <p class="restaurant-address">{{ restaurant.address }}</p>
+        <p class="restaurant-cuisine" *ngIf="restaurant.cuisine">{{ restaurant.cuisine }}</p>
+        
+        <div class="restaurant-rating">
+          <span class="stars">{{ getStars(restaurant.rating) }}</span>
+          <span class="rating-value">{{ restaurant.rating }}/5</span>
+          <span class="review-count" *ngIf="restaurant.reviews">
+            ({{ restaurant.reviews.length }} avis)
+          </span>
+        </div>
+      </div>
+
+      <div class="card-footer">
+        <button 
+          class="view-details-btn" 
+          (click)="viewRestaurantDetails(restaurant.id, $event)"
+        >
+          Voir les détails →
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

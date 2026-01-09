@@ -1,0 +1,87 @@
+<div class="cart-container">
+  <div class="cart-header">
+    <h1>🛒 Mon Panier</h1>
+    <button
+      *ngIf="cart() && cart()!.items.length > 0"
+      class="clear-cart-btn"
+      (click)="clearCart()"
+    >
+      Vider le panier
+    </button>
+  </div>
+
+  <div class="empty-cart" *ngIf="!cart() || cart()!.items.length === 0">
+    <p>Votre panier est vide</p>
+    <button class="browse-btn" routerLink="/restaurants">
+      Parcourir les restaurants
+    </button>
+  </div>
+
+  <div class="cart-content" *ngIf="cart() && cart()!.items.length > 0">
+    <div class="cart-items">
+      <div class="restaurant-info">
+        <h2>{{ cart()!.restaurantName }}</h2>
+      </div>
+
+      <div class="items-list">
+        <div *ngFor="let item of cart()!.items" class="cart-item">
+          <div class="item-details">
+            <h3 class="item-name">{{ item.menuItem.name }}</h3>
+            <p class="item-description" *ngIf="item.menuItem.description">
+              {{ item.menuItem.description }}
+            </p>
+            <div class="item-price-info">
+              <span class="unit-price">{{ item.menuItem.price | number:'1.2-2' }} $</span>
+              <span class="item-total">
+                Total: {{ (item.menuItem.price * item.quantity) | number:'1.2-2' }} $
+              </span>
+            </div>
+          </div>
+
+          <div class="item-actions">
+            <div class="quantity-controls">
+              <button
+                class="qty-btn"
+                (click)="updateQuantity(item.menuItem.id, item.quantity - 1)"
+              >
+                -
+              </button>
+              <span class="quantity">{{ item.quantity }}</span>
+              <button
+                class="qty-btn"
+                (click)="updateQuantity(item.menuItem.id, item.quantity + 1)"
+              >
+                +
+              </button>
+            </div>
+            <button
+              class="remove-btn"
+              (click)="removeItem(item.menuItem.id)"
+              title="Supprimer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-summary">
+      <div class="summary-card">
+        <h3>Résumé de la commande</h3>
+        <div class="summary-row">
+          <span>Sous-total</span>
+          <span class="value">{{ getSubtotal() | number:'1.2-2' }} $</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span class="value">{{ getTotal() | number:'1.2-2' }} $</span>
+        </div>
+        <button class="validate-btn" (click)="validateCart()">
+          Valider le panier
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

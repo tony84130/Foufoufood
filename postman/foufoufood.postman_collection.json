@@ -1,0 +1,1267 @@
+{
+	"info": {
+		"_postman_id": "c1f6c0d8-2121-4b1f-ac11-1a3b53f5b7e8",
+		"name": "FouFouFood API",
+		"description": "Collection complète pour tester l'API FouFouFood avec toutes les fonctionnalités",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"description": "Authentification et gestion des sessions",
+			"item": [
+				{
+					"name": "signUp - Inscription",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\",\n    \"phone\": \"1234567890\",\n    \"role\": \"client\",\n    \"address\": {\n        \"line1\": \"123 Main Street\",\n        \"city\": \"Montreal\",\n        \"region\": \"Quebec\",\n        \"postalCode\": \"H1H 1H1\",\n        \"country\": \"Canada\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/auth/sign-up",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "auth", "sign-up"]
+						},
+						"description": "Inscription d'un nouvel utilisateur. Rôles autorisés : 'client' ou 'delivery_partner' seulement."
+					},
+					"response": []
+				},
+				{
+					"name": "signIn - Connexion",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.collectionVariables.set(\"token\", jsonData.data.token);",
+									"        console.log('Token sauvegardé:', jsonData.data.token);",
+									"    }",
+									"} catch (e) {",
+									"    console.log(e);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"john.doe@example.com\",\n    \"password\": \"password123\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/auth/sign-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "auth", "sign-in"]
+						},
+						"description": "Connexion d'un utilisateur. Le token JWT est automatiquement sauvegardé dans la variable {{token}}."
+					},
+					"response": []
+				},
+				{
+					"name": "signOut - Déconnexion",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/auth/sign-out",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "auth", "sign-out"]
+						},
+						"description": "Déconnexion de l'utilisateur. Révoque le token JWT actuel."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"description": "Gestion des utilisateurs",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "getUserById - Obtenir un utilisateur",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "users", "{{userId}}"]
+						},
+						"description": "Récupère un utilisateur par son ID. Un utilisateur ne peut voir que son propre profil, sauf platform_admin qui peut voir tous les profils."
+					},
+					"response": []
+				},
+				{
+					"name": "searchUsers - Rechercher des utilisateurs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/users/search?q=john&limit=10&page=1",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "users", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "john",
+									"description": "Terme de recherche"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Nombre de résultats"
+								},
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Numéro de page"
+								}
+							]
+						},
+						"description": "Recherche d'utilisateurs par nom ou email. Réservé aux platform_admin."
+					},
+					"response": []
+				},
+				{
+					"name": "updateUser - Mettre à jour un utilisateur",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"John Doe Updated\",\n    \"email\": \"john.updated@example.com\",\n    \"phone\": \"0987654321\",\n    \"address\": {\n        \"line1\": \"456 Updated Street\",\n        \"line2\": \"Apt 2B\",\n        \"city\": \"Toronto\",\n        \"region\": \"Ontario\",\n        \"postalCode\": \"M1M 1M1\",\n        \"country\": \"Canada\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "users", "{{userId}}"]
+						},
+						"description": "Met à jour les informations d'un utilisateur. Le changement de rôle n'est pas autorisé."
+					},
+					"response": []
+				},
+				{
+					"name": "deleteUser - Supprimer un utilisateur",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/users/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "users", "{{userId}}"]
+						},
+						"description": "Supprime un utilisateur. Un utilisateur peut supprimer son propre compte, un platform_admin peut supprimer n'importe quel compte."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admin",
+			"description": "Routes réservées aux platform_admin",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "createRestaurantWithAdmin - Créer restaurant + admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.restaurant) {",
+									"        pm.collectionVariables.set(\"restaurantId\", jsonData.data.restaurant.id);",
+									"        console.log('Restaurant ID saved:', jsonData.data.restaurant.id);",
+									"    }",
+									"} catch (e) {",
+									"    console.log(e);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"restaurant\": {\n        \"name\": \"Le Super Resto\",\n        \"address\": \"456 Avenue des Gourmands\",\n        \"phone\": \"0123456789\",\n        \"cuisine\": \"Française\"\n    },\n    \"admin\": {\n        \"name\": \"Admin Resto\",\n        \"email\": \"admin.resto@example.com\",\n        \"password\": \"password123\"\n    }\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/admin/restaurants",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "admin", "restaurants"]
+						},
+						"description": "Crée un restaurant et son administrateur associé. Si l'admin existe déjà, le restaurant est associé à cet admin. Nécessite un token platform_admin."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Restaurants",
+			"description": "Gestion des restaurants",
+			"item": [
+				{
+					"name": "getRestaurants - Liste des restaurants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants"]
+						},
+						"description": "Récupère tous les restaurants (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "searchRestaurants - Rechercher restaurants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/search?q=italien&cuisine=Italienne",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "italien",
+									"description": "Terme de recherche"
+								},
+								{
+									"key": "cuisine",
+									"value": "Italienne",
+									"description": "Type de cuisine"
+								}
+							]
+						},
+						"description": "Recherche de restaurants par nom, adresse ou cuisine (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "getMyRestaurants - Mes restaurants",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/me",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "me"]
+						},
+						"description": "Récupère les restaurants de l'utilisateur connecté (restaurant_admin seulement)."
+					},
+					"response": []
+				},
+				{
+					"name": "getRestaurantById - Restaurant par ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/{{restaurantId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "{{restaurantId}}"]
+						},
+						"description": "Récupère un restaurant par son ID (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "createRestaurant - Créer restaurant",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.id) {",
+									"        pm.collectionVariables.set(\"restaurantId\", jsonData.data.id);",
+									"        console.log('Restaurant ID saved:', jsonData.data.id);",
+									"    }",
+									"} catch (e) {",
+									"    console.log(e);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Le Foufou-food\",\n    \"address\": \"123 rue de la boustifaille\",\n    \"phone\": \"0123456789\",\n    \"cuisine\": \"Gastronomique\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants"]
+						},
+						"description": "Crée un restaurant. Nécessite un token restaurant_admin."
+					},
+					"response": []
+				},
+				{
+					"name": "updateRestaurant - Mettre à jour restaurant",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"0987654321\",\n    \"cuisine\": \"Italienne\",\n    \"openingHours\": [\n        {\n            \"day\": \"Mon\",\n            \"open\": \"09:00\",\n            \"close\": \"21:00\"\n        }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/{{restaurantId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "{{restaurantId}}"]
+						},
+						"description": "Met à jour un restaurant. Seul le propriétaire peut modifier son restaurant."
+					},
+					"response": []
+				},
+				{
+					"name": "deleteRestaurant - Supprimer restaurant",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/{{restaurantId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "{{restaurantId}}"]
+						},
+						"description": "Supprime un restaurant. Un restaurant_admin peut supprimer ses restaurants, un platform_admin peut supprimer n'importe quel restaurant."
+					},
+					"response": []
+				},
+				{
+					"name": "addRestaurantReview - Ajouter avis",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rating\": 5,\n    \"comment\": \"Excellent restaurant, je recommande vivement !\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/{{restaurantId}}/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "{{restaurantId}}", "reviews"]
+						},
+						"description": "Ajoute ou met à jour un avis pour un restaurant. Rating entre 1 et 5. Client seulement. Recalcule automatiquement la note moyenne."
+					},
+					"response": []
+				},
+				{
+					"name": "deleteRestaurantReview - Supprimer avis",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/restaurants/{{restaurantId}}/reviews",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "restaurants", "{{restaurantId}}", "reviews"]
+						},
+						"description": "Supprime l'avis d'un client pour un restaurant. Client seulement. Recalcule automatiquement la note moyenne."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Menus",
+			"description": "Gestion des items de menu",
+			"item": [
+				{
+					"name": "getMenuItems - Liste des items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus?restaurantId={{restaurantId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus"],
+							"query": [
+								{
+									"key": "restaurantId",
+									"value": "{{restaurantId}}",
+									"description": "ID du restaurant"
+								}
+							]
+						},
+						"description": "Récupère tous les items de menu d'un restaurant (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "searchMenuItems - Rechercher items",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus/search?q=pizza&restaurantId={{restaurantId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus", "search"],
+							"query": [
+								{
+									"key": "q",
+									"value": "pizza",
+									"description": "Terme de recherche"
+								},
+								{
+									"key": "restaurantId",
+									"value": "{{restaurantId}}",
+									"description": "ID du restaurant"
+								}
+							]
+						},
+						"description": "Recherche d'items de menu par nom ou description (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "getMenuItemById - Item par ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus/{{menuItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus", "{{menuItemId}}"]
+						},
+						"description": "Récupère un item de menu par son ID (public)."
+					},
+					"response": []
+				},
+				{
+					"name": "addMenuItemToRestaurant - Ajouter item",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const jsonData = pm.response.json();",
+									"    if (jsonData.data && (jsonData.data.id || jsonData.data._id)) {",
+									"        const menuItemId = jsonData.data.id || jsonData.data._id;",
+									"        pm.collectionVariables.set(\"menuItemId\", menuItemId);",
+									"        console.log('Menu item ID saved:', menuItemId);",
+									"    }",
+									"} catch (e) {",
+									"    console.log(e);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"restaurantId\": \"{{restaurantId}}\",\n    \"name\": \"Plat du jour\",\n    \"description\": \"Un délicieux plat du jour\",\n    \"price\": 12.99,\n    \"category\": \"Plat\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus"]
+						},
+						"description": "Ajoute un item de menu à un restaurant. Restaurant_admin seulement (pas platform_admin)."
+					},
+					"response": []
+				},
+				{
+					"name": "updateMenuItem - Mettre à jour item",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"price\": 14.99,\n    \"description\": \"Plat du jour modifié\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus/{{menuItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus", "{{menuItemId}}"]
+						},
+						"description": "Met à jour un item de menu. Le changement de restaurant n'est pas autorisé."
+					},
+					"response": []
+				},
+				{
+					"name": "deleteMenuItem - Supprimer item",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/menus/{{menuItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "menus", "{{menuItemId}}"]
+						},
+						"description": "Supprime un item de menu. Restaurant_admin seulement."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cart",
+			"description": "Gestion du panier (client seulement)",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "getCart - Obtenir le panier",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart"]
+						},
+						"description": "Récupère le panier de l'utilisateur connecté."
+					},
+					"response": []
+				},
+				{
+					"name": "getCartStats - Statistiques du panier",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart", "stats"]
+						},
+						"description": "Récupère les statistiques du panier (nombre d'items, prix total, etc.)."
+					},
+					"response": []
+				},
+				{
+					"name": "addToCart - Ajouter au panier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"menuItemId\": \"{{menuItemId}}\",\n    \"quantity\": 2,\n    \"notes\": \"Sans oignons\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart/items",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart", "items"]
+						},
+						"description": "Ajoute un item au panier. Tous les items doivent être du même restaurant."
+					},
+					"response": []
+				},
+				{
+					"name": "updateCartItem - Mettre à jour quantité",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"quantity\": 3\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart/items/{{menuItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart", "items", "{{menuItemId}}"]
+						},
+						"description": "Met à jour la quantité d'un item. Si quantité = 0, l'item est supprimé."
+					},
+					"response": []
+				},
+				{
+					"name": "removeFromCart - Retirer du panier",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart/items/{{menuItemId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart", "items", "{{menuItemId}}"]
+						},
+						"description": "Retire un item du panier."
+					},
+					"response": []
+				},
+				{
+					"name": "clearCart - Vider le panier",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart"]
+						},
+						"description": "Vide complètement le panier."
+					},
+					"response": []
+				},
+				{
+					"name": "validateCart - Valider le panier",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/cart/validate",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "cart", "validate"]
+						},
+						"description": "Valide le panier avant de passer commande (vérifie disponibilité et prix à jour)."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Orders",
+			"description": "Gestion des commandes",
+			"item": [
+				{
+					"name": "Client",
+					"description": "Routes pour les clients",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"item": [
+						{
+							"name": "createOrderFromCart - Créer commande depuis panier",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"try {",
+											"    const jsonData = pm.response.json();",
+											"    if (jsonData.data && (jsonData.data.id || jsonData.data._id)) {",
+											"        const orderId = jsonData.data.id || jsonData.data._id;",
+											"        pm.collectionVariables.set(\"orderId\", orderId);",
+											"        console.log('Order ID saved:', orderId);",
+											"    }",
+											"} catch (e) {",
+											"    console.log(e);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"deliveryAddress\": {\n        \"line1\": \"123 Test Street\",\n        \"city\": \"Montreal\",\n        \"region\": \"Quebec\",\n        \"postalCode\": \"H1A 1A1\",\n        \"country\": \"Canada\"\n    },\n    \"useCart\": true\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders"]
+								},
+								"description": "Crée une commande depuis le panier. Le panier est automatiquement vidé après la création."
+							},
+							"response": []
+						},
+						{
+							"name": "createOrderManual - Créer commande manuelle",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"try {",
+											"    const jsonData = pm.response.json();",
+											"    if (jsonData.data && (jsonData.data.id || jsonData.data._id)) {",
+											"        const orderId = jsonData.data.id || jsonData.data._id;",
+											"        pm.collectionVariables.set(\"orderId\", orderId);",
+											"        console.log('Order ID saved:', orderId);",
+											"    }",
+											"} catch (e) {",
+											"    console.log(e);",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"restaurantId\": \"{{restaurantId}}\",\n    \"items\": [\n        {\n            \"menuItemId\": \"{{menuItemId}}\",\n            \"quantity\": 2,\n            \"notes\": \"Sans oignons\"\n        }\n    ],\n    \"deliveryAddress\": {\n        \"line1\": \"123 Test Street\",\n        \"city\": \"Montreal\",\n        \"region\": \"Quebec\",\n        \"postalCode\": \"H1A 1A1\",\n        \"country\": \"Canada\"\n    },\n    \"useCart\": false\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders"]
+								},
+								"description": "Crée une commande manuellement sans utiliser le panier."
+							},
+							"response": []
+						},
+						{
+							"name": "getMyOrders - Mes commandes",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders?status=Préparée&limit=10&page=1",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders"],
+									"query": [
+										{
+											"key": "status",
+											"value": "Préparée",
+											"description": "Filtrer par statut (optionnel)"
+										},
+										{
+											"key": "limit",
+											"value": "10",
+											"description": "Nombre de résultats"
+										},
+										{
+											"key": "page",
+											"value": "1",
+											"description": "Numéro de page"
+										}
+									]
+								},
+								"description": "Récupère les commandes de l'utilisateur connecté avec pagination et filtres optionnels."
+							},
+							"response": []
+						},
+						{
+							"name": "getOrderById - Commande par ID",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}"]
+								},
+								"description": "Récupère une commande par son ID. Un client ne peut voir que ses propres commandes."
+							},
+							"response": []
+						},
+						{
+							"name": "cancelOrder - Annuler commande",
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}/cancel",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}", "cancel"]
+								},
+								"description": "Annule une commande. Un client ne peut annuler que ses propres commandes (pas si déjà livrée/annulée)."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Restaurant Admin",
+					"description": "Routes pour les restaurant_admin",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"item": [
+						{
+							"name": "getOrderById - Voir commande",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}"]
+								},
+								"description": "Un restaurant_admin peut voir les commandes de ses restaurants."
+							},
+							"response": []
+						},
+						{
+							"name": "updateOrderStatus - Mettre à jour statut",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"En livraison\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}", "status"]
+								},
+								"description": "Met à jour le statut d'une commande. Statuts valides : En attente, Confirmée, Préparée, En livraison, Livrée, Annulée."
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delivery Partner",
+					"description": "Routes pour les delivery_partner",
+					"auth": {
+						"type": "bearer",
+						"bearer": [
+							{
+								"key": "token",
+								"value": "{{token}}",
+								"type": "string"
+							}
+						]
+					},
+					"item": [
+						{
+							"name": "getAvailableOrders - Commandes disponibles",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/delivery/available",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "delivery", "available"]
+								},
+								"description": "Récupère les commandes disponibles pour assignation (statut Préparée, non assignées)."
+							},
+							"response": []
+						},
+						{
+							"name": "getMyAssignedOrders - Mes commandes assignées",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/delivery/me",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "delivery", "me"]
+								},
+								"description": "Récupère les commandes assignées au livreur (statuts Préparée ou En livraison)."
+							},
+							"response": []
+						},
+						{
+							"name": "assignOrderToMe - S'assigner une commande",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}/assign",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}", "assign"]
+								},
+								"description": "Assigne une commande au livreur connecté. La commande doit être en statut Préparée et non assignée."
+							},
+							"response": []
+						},
+						{
+							"name": "getOrderById - Voir commande assignée",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}"]
+								},
+								"description": "Un delivery_partner peut voir les commandes qui lui sont assignées."
+							},
+							"response": []
+						},
+						{
+							"name": "updateOrderStatus - Mettre à jour statut",
+							"request": {
+								"method": "PUT",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"status\": \"Livrée\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/foufoufood/orders/{{orderId}}/status",
+									"host": ["{{baseUrl}}"],
+									"path": ["foufoufood", "orders", "{{orderId}}", "status"]
+								},
+								"description": "Un delivery_partner peut mettre à jour le statut vers 'En livraison' ou 'Livrée' pour les commandes qui lui sont assignées."
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Tracking",
+			"description": "Suivi des commandes",
+			"auth": {
+				"type": "bearer",
+				"bearer": [
+					{
+						"key": "token",
+						"value": "{{token}}",
+						"type": "string"
+					}
+				]
+			},
+			"item": [
+				{
+					"name": "getOrderTracking - Suivi d'une commande",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/foufoufood/tracking/{{orderId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["foufoufood", "tracking", "{{orderId}}"]
+						},
+						"description": "Récupère les informations de suivi d'une commande. Le client ne peut suivre que ses propres commandes."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "restaurantId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "menuItemId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

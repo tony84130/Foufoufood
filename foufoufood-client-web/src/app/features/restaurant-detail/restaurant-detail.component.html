@@ -1,0 +1,185 @@
+<div class="restaurant-detail-container" *ngIf="restaurant()">
+  <!-- Header Section -->
+  <div class="restaurant-header">
+    <div class="header-content">
+      <div class="restaurant-info">
+        <h1>{{ restaurant()?.name }}</h1>
+        <p class="address">{{ restaurant()?.address }}</p>
+        <div class="meta-info">
+          <span *ngIf="restaurant()?.cuisine" class="cuisine">{{ restaurant()?.cuisine }}</span>
+          <span *ngIf="restaurant()?.phone" class="phone">📞 {{ restaurant()?.phone }}</span>
+        </div>
+        <div class="rating-section">
+          <span class="stars">{{ getStars(restaurant()?.rating || 0) }}</span>
+          <span class="rating-value">{{ restaurant()?.rating }}/5</span>
+          <span class="review-count" *ngIf="restaurant()?.reviews">
+            ({{ restaurant()?.reviews?.length || 0 }} avis)
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button
+          class="favorite-btn"
+          (click)="toggleFavorite()"
+          [class.active]="isFavorite()"
+          title="{{ isFavorite() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}"
+        >
+          <span class="heart-icon">{{ isFavorite() ? '❤️' : '🤍' }}</span>
+          <span>{{ isFavorite() ? 'Favori' : 'Ajouter aux favoris' }}</span>
+        </button>
+        <div class="cart-actions" *ngIf="hasItemsInCart">
+          <button class="view-cart-btn" (click)="viewCart()">
+            🛒 Voir le panier ({{ cartItemCount }})
+          </button>
+          <button class="checkout-btn" (click)="checkout()">
+            Passer commande →
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Opening Hours -->
+    <div class="opening-hours-section" *ngIf="getSortedOpeningHours().length > 0">
+      <h3>🕐 Horaires d'ouverture</h3>
+      <div class="hours-grid">
+        <div *ngFor="let hours of getSortedOpeningHours()" class="hours-item">
+          <span class="day">{{ getDayLabel(hours.day) }}</span>
+          <span class="time">{{ hours.open }} - {{ hours.close }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Menu Section -->
+  <div class="menu-section">
+    <h2>🍽️ Menu</h2>
+      <div *ngFor="let category of menuCategories" class="menu-category">
+        <h3 *ngIf="getCategoryItems(category).length > 0" class="category-title">{{ category }}</h3>
+        <div class="menu-items-grid" *ngIf="getCategoryItems(category).length > 0">
+        <div *ngFor="let item of getCategoryItems(category)" class="menu-item-card">
+          <div class="item-content">
+            <div class="item-info">
+              <h4 class="item-name">{{ item.name }}</h4>
+              <p class="item-description" *ngIf="item.description">{{ item.description }}</p>
+              <div class="item-price">{{ item.price | number:'1.2-2' }} $</div>
+            </div>
+            <div class="item-image" *ngIf="item.image">
+              <img [src]="item.image" [alt]="item.name" />
+            </div>
+          </div>
+          <div class="item-actions">
+            <div class="quantity-selector">
+              <button
+                class="qty-btn"
+                (click)="decreaseQuantity(item.id)"
+              >-</button>
+              <input
+                type="number"
+                [value]="getQuantity(item.id)"
+                (input)="setQuantity(item.id, +$any($event.target).value || 1)"
+                min="1"
+                class="qty-input"
+              />
+              <button
+                class="qty-btn"
+                (click)="setQuantity(item.id, getQuantity(item.id) + 1)"
+              >+</button>
+            </div>
+            <button
+              class="add-to-cart-btn"
+              (click)="addToCart(item, getQuantity(item.id))"
+            >
+              Ajouter au panier
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="empty-menu" *ngIf="menuItems().length === 0">
+      <p>Aucun item dans le menu pour le moment</p>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div class="reviews-section">
+    <div class="reviews-header">
+      <h2>⭐ Avis et Notes</h2>
+      <button
+        *ngIf="isAuthenticated"
+        class="add-review-btn"
+        (click)="toggleReviewForm()"
+      >
+        {{ userReview() ? 'Modifier mon avis' : 'Ajouter un avis' }}
+      </button>
+    </div>
+
+    <!-- Review Form -->
+    <div class="review-form-container" *ngIf="showReviewForm() && isAuthenticated">
+      <form [formGroup]="reviewForm" (ngSubmit)="submitReview()">
+        <div class="form-group">
+          <label>Note *</label>
+          <select formControlName="rating" class="form-control">
+            <option [value]="5">5 ⭐⭐⭐⭐⭐</option>
+            <option [value]="4">4 ⭐⭐⭐⭐</option>
+            <option [value]="3">3 ⭐⭐⭐</option>
+            <option [value]="2">2 ⭐⭐</option>
+            <option [value]="1">1 ⭐</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Commentaire</label>
+          <textarea
+            formControlName="comment"
+            class="form-control"
+            rows="4"
+            placeholder="Partagez votre expérience..."
+          ></textarea>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" (click)="toggleReviewForm()">
+            Annuler
+          </button>
+          <button type="submit" class="btn-primary" [disabled]="reviewForm.invalid">
+            {{ userReview() ? 'Modifier' : 'Publier' }}
+          </button>
+          <button
+            *ngIf="userReview()"
+            type="button"
+            class="btn-danger"
+            (click)="deleteReview()"
+          >
+            Supprimer
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Reviews List -->
+    <div class="reviews-list" *ngIf="restaurant()?.reviews && restaurant()!.reviews!.length > 0">
+      <ng-container *ngFor="let review of restaurant()!.reviews">
+        <div *ngIf="!showReviewForm() || !isUserReview(review)" class="review-card">
+          <div class="review-header">
+            <div class="review-user">
+              <strong>{{ getReviewUserName(review) }}</strong>
+              <span class="review-date" *ngIf="review.createdAt">{{ formatDate(review.createdAt) }}</span>
+            </div>
+            <div class="review-rating">
+              <span class="stars">{{ getStars(review.rating) }}</span>
+              <span class="rating-number">{{ review.rating }}/5</span>
+            </div>
+          </div>
+          <p class="review-comment" *ngIf="review.comment">{{ review.comment }}</p>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="empty-reviews" *ngIf="!restaurant()?.reviews || restaurant()!.reviews!.length === 0">
+      <p>Aucun avis pour le moment</p>
+    </div>
+  </div>
+</div>
+
+<div class="loading-state" *ngIf="isLoading()">
+  <p>Chargement...</p>
+</div>
+

@@ -1,0 +1,346 @@
+<div class="admin-platform-container">
+  <div class="header">
+    <h1>Administration de la Plateforme</h1>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-container">
+    <button
+      class="tab-button"
+      [class.active]="selectedTab === 'users'"
+      (click)="selectTab('users')"
+    >
+      Utilisateurs
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="selectedTab === 'restaurants'"
+      (click)="selectTab('restaurants')"
+    >
+      Restaurants
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="selectedTab === 'create'"
+      (click)="selectTab('create')"
+    >
+      Créer
+    </button>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="search-container" *ngIf="selectedTab !== 'create'">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        class="search-input"
+        [placeholder]="selectedTab === 'users' ? 'Rechercher un utilisateur...' : 'Rechercher un restaurant...'"
+        [value]="searchQuery()"
+        (input)="onSearchChange($event)"
+      />
+      <button
+        *ngIf="searchQuery()"
+        class="clear-search-btn"
+        (click)="clearSearch()"
+        title="Effacer la recherche"
+      >
+        ✕
+      </button>
+    </div>
+    <div class="search-results-info" *ngIf="searchQuery()">
+      <span *ngIf="selectedTab === 'users'">
+        {{ filteredUsers().length }} résultat(s) trouvé(s) sur {{ users().length }}
+      </span>
+      <span *ngIf="selectedTab === 'restaurants'">
+        {{ filteredRestaurants().length }} résultat(s) trouvé(s) sur {{ restaurants().length }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Tab Content: Users -->
+  <div class="tab-content" *ngIf="selectedTab === 'users'">
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+    <div class="users-list">
+      <div *ngIf="isLoading && users().length === 0" class="loading">
+        Chargement...
+      </div>
+      <div *ngIf="!isLoading && users().length === 0" class="empty-state">
+        Aucun utilisateur pour le moment
+      </div>
+      <div *ngIf="!isLoading && searchQuery() && filteredUsers().length === 0" class="empty-state">
+        Aucun résultat trouvé pour "{{ searchQuery() }}"
+      </div>
+      <div class="users-grid" *ngIf="filteredUsers().length > 0">
+        <div class="user-card" *ngFor="let user of filteredUsers()">
+          <div class="user-header">
+            <h3>{{ user.name }}</h3>
+            <button
+              *ngIf="canDeleteUser(user)"
+              (click)="deleteUser(user.id, user.name)"
+              class="btn btn-danger btn-sm"
+            >
+              Supprimer
+            </button>
+          </div>
+          <div class="user-info">
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Rôle:</strong> {{ getRoleDisplay(user.role) }}</p>
+            <p *ngIf="user.phone"><strong>Téléphone:</strong> {{ user.phone }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Content: Restaurants -->
+  <div class="tab-content" *ngIf="selectedTab === 'restaurants'">
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+    <div class="restaurants-list">
+      <div *ngIf="isLoading && restaurants().length === 0" class="loading">
+        Chargement...
+      </div>
+      <div *ngIf="!isLoading && restaurants().length === 0" class="empty-state">
+        Aucun restaurant pour le moment
+      </div>
+      <div *ngIf="!isLoading && searchQuery() && filteredRestaurants().length === 0" class="empty-state">
+        Aucun résultat trouvé pour "{{ searchQuery() }}"
+      </div>
+      <div class="restaurants-grid" *ngIf="filteredRestaurants().length > 0">
+        <div class="restaurant-card" *ngFor="let restaurant of filteredRestaurants()">
+          <div class="restaurant-header">
+            <h3>{{ restaurant.name }}</h3>
+            <button
+              (click)="deleteRestaurant(restaurant.id)"
+              class="btn btn-danger btn-sm"
+            >
+              Supprimer
+            </button>
+          </div>
+          <div class="restaurant-info">
+            <p><strong>Adresse:</strong> {{ restaurant.address }}</p>
+            <p *ngIf="restaurant.cuisine"><strong>Cuisine:</strong> {{ restaurant.cuisine }}</p>
+            <p *ngIf="restaurant.phone"><strong>Téléphone:</strong> {{ restaurant.phone }}</p>
+            <p><strong>Note:</strong> {{ restaurant.rating }}/5</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Content: Create -->
+  <div class="tab-content" *ngIf="selectedTab === 'create'">
+    <div class="error-message" *ngIf="errorMessage">
+      {{ errorMessage }}
+    </div>
+    <div class="success-message" *ngIf="successMessage">
+      {{ successMessage }}
+    </div>
+    <div class="create-form">
+      <h2>Créer un Restaurant avec un Administrateur</h2>
+      <form [formGroup]="restaurantForm" (ngSubmit)="onSubmit()">
+        <div formGroupName="restaurant">
+          <h3>Informations du Restaurant</h3>
+          
+          <div class="form-group">
+            <label for="restaurant-name">Nom du restaurant *</label>
+            <input
+              type="text"
+              id="restaurant-name"
+              formControlName="name"
+              class="form-control"
+              [class.error]="restaurantGroup.get('name')?.invalid && restaurantGroup.get('name')?.touched"
+            />
+            <div class="error-message" *ngIf="restaurantGroup.get('name')?.invalid && restaurantGroup.get('name')?.touched">
+              Le nom est requis
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="restaurant-address">Adresse *</label>
+            <input
+              type="text"
+              id="restaurant-address"
+              formControlName="address"
+              class="form-control"
+              [class.error]="restaurantGroup.get('address')?.invalid && restaurantGroup.get('address')?.touched"
+            />
+            <div class="error-message" *ngIf="restaurantGroup.get('address')?.invalid && restaurantGroup.get('address')?.touched">
+              L'adresse est requise
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="restaurant-cuisine">Type de cuisine</label>
+              <input
+                type="text"
+                id="restaurant-cuisine"
+                formControlName="cuisine"
+                class="form-control"
+                placeholder="Italienne, Asiatique, etc."
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="restaurant-phone">Téléphone</label>
+              <input
+                type="tel"
+                id="restaurant-phone"
+                formControlName="phone"
+                class="form-control"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div formGroupName="admin">
+          <h3>Informations de l'Administrateur</h3>
+          
+          <div class="form-group">
+            <label for="admin-name">Nom complet *</label>
+            <input
+              type="text"
+              id="admin-name"
+              formControlName="name"
+              class="form-control"
+              [class.error]="adminGroup.get('name')?.invalid && adminGroup.get('name')?.touched"
+            />
+            <div class="error-message" *ngIf="adminGroup.get('name')?.invalid && adminGroup.get('name')?.touched">
+              Le nom est requis
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="admin-email">Email *</label>
+              <input
+                type="email"
+                id="admin-email"
+                formControlName="email"
+                class="form-control"
+                [class.error]="adminGroup.get('email')?.invalid && adminGroup.get('email')?.touched"
+              />
+              <div class="error-message" *ngIf="adminGroup.get('email')?.invalid && adminGroup.get('email')?.touched">
+                <span *ngIf="adminGroup.get('email')?.errors?.['required']">L'email est requis</span>
+                <span *ngIf="adminGroup.get('email')?.errors?.['email']">L'email n'est pas valide</span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="admin-password">Mot de passe *</label>
+              <input
+                type="password"
+                id="admin-password"
+                formControlName="password"
+                class="form-control"
+                [class.error]="adminGroup.get('password')?.invalid && adminGroup.get('password')?.touched"
+              />
+              <div class="error-message" *ngIf="adminGroup.get('password')?.invalid && adminGroup.get('password')?.touched">
+                <span *ngIf="adminGroup.get('password')?.errors?.['required']">Le mot de passe est requis</span>
+                <span *ngIf="adminGroup.get('password')?.errors?.['minlength']">Le mot de passe doit contenir au moins 6 caractères</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="admin-phone">Téléphone</label>
+            <input
+              type="tel"
+              id="admin-phone"
+              formControlName="phone"
+              class="form-control"
+            />
+          </div>
+
+          <div formGroupName="address" class="address-group">
+            <h4>Adresse (optionnel)</h4>
+            
+            <div class="form-group">
+              <label for="admin-line1">Ligne 1</label>
+              <input
+                type="text"
+                id="admin-line1"
+                formControlName="line1"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="admin-line2">Ligne 2</label>
+              <input
+                type="text"
+                id="admin-line2"
+                formControlName="line2"
+                class="form-control"
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="admin-city">Ville</label>
+                <input
+                  type="text"
+                  id="admin-city"
+                  formControlName="city"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="admin-region">Région/Province</label>
+                <input
+                  type="text"
+                  id="admin-region"
+                  formControlName="region"
+                  class="form-control"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="admin-postalCode">Code postal</label>
+                <input
+                  type="text"
+                  id="admin-postalCode"
+                  formControlName="postalCode"
+                  class="form-control"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="admin-country">Pays</label>
+                <input
+                  type="text"
+                  id="admin-country"
+                  formControlName="country"
+                  class="form-control"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="restaurantForm.invalid || isLoading"
+        >
+          <span *ngIf="!isLoading">Créer</span>
+          <span *ngIf="isLoading">Création...</span>
+        </button>
+      </form>
+    </div>
+  </div>
+</div>

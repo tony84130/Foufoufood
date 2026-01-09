@@ -1,0 +1,150 @@
+<div class="checkout-container">
+  <div class="checkout-header">
+    <button class="back-btn" (click)="goBack()">← Retour au panier</button>
+    <h1>Finalisation de la commande</h1>
+  </div>
+
+  <div class="checkout-content" *ngIf="cart() && cart()!.items.length > 0">
+    <div class="checkout-main">
+      <!-- Formulaire d'adresse de livraison -->
+      <div class="address-section">
+        <h2>Adresse de livraison</h2>
+        <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()">
+          <div class="form-group">
+            <label for="line1">Adresse (ligne 1) *</label>
+            <input
+              type="text"
+              id="line1"
+              formControlName="line1"
+              [class.invalid]="isFieldInvalid('line1')"
+              placeholder="123 Rue Principale"
+            />
+            <span class="error-message" *ngIf="isFieldInvalid('line1')">
+              {{ getFieldError('line1') }}
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="line2">Adresse (ligne 2)</label>
+            <input
+              type="text"
+              id="line2"
+              formControlName="line2"
+              placeholder="Appartement, suite, etc. (optionnel)"
+            />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="city">Ville *</label>
+              <input
+                type="text"
+                id="city"
+                formControlName="city"
+                [class.invalid]="isFieldInvalid('city')"
+                placeholder="Montréal"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('city')">
+                {{ getFieldError('city') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="region">Province/État *</label>
+              <input
+                type="text"
+                id="region"
+                formControlName="region"
+                [class.invalid]="isFieldInvalid('region')"
+                placeholder="Québec"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('region')">
+                {{ getFieldError('region') }}
+              </span>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="postalCode">Code postal *</label>
+              <input
+                type="text"
+                id="postalCode"
+                formControlName="postalCode"
+                [class.invalid]="isFieldInvalid('postalCode')"
+                placeholder="H1A 1A1"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('postalCode')">
+                {{ getFieldError('postalCode') }}
+              </span>
+            </div>
+
+            <div class="form-group">
+              <label for="country">Pays *</label>
+              <input
+                type="text"
+                id="country"
+                formControlName="country"
+                [class.invalid]="isFieldInvalid('country')"
+                placeholder="Canada"
+              />
+              <span class="error-message" *ngIf="isFieldInvalid('country')">
+                {{ getFieldError('country') }}
+              </span>
+            </div>
+          </div>
+
+          <div class="error-alert" *ngIf="errorMessage()">
+            <p>{{ errorMessage() }}</p>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="submit-btn"
+              [disabled]="isSubmitting() || checkoutForm.invalid"
+            >
+              <span *ngIf="!isSubmitting()">Confirmer la commande</span>
+              <span *ngIf="isSubmitting()">Traitement en cours...</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Récapitulatif de commande -->
+    <div class="order-summary">
+      <div class="summary-card">
+        <h3>Récapitulatif de la commande</h3>
+        
+        <div class="restaurant-info">
+          <h4>{{ cart()!.restaurantName }}</h4>
+        </div>
+
+        <div class="items-list">
+          <div *ngFor="let item of cart()!.items" class="summary-item">
+            <div class="item-info">
+              <span class="item-name">{{ item.menuItem.name }}</span>
+              <span class="item-quantity">x{{ item.quantity }}</span>
+            </div>
+            <span class="item-price">
+              {{ (item.menuItem.price * item.quantity) | number:'1.2-2' }} $
+            </span>
+          </div>
+        </div>
+
+        <div class="summary-totals">
+          <div class="summary-row">
+            <span>Sous-total</span>
+            <span class="value">{{ getSubtotal() | number:'1.2-2' }} $</span>
+          </div>
+          <div class="summary-row total">
+            <span>Total</span>
+            <span class="value">{{ getTotal() | number:'1.2-2' }} $</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
